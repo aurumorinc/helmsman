@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stalwart
+  namespace: stalwart
+  labels:
+    app: stalwart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stalwart
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: stalwart
+    spec:
+      containers:
+        - name: stalwart
+          image: stalwartlabs/stalwart:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 443
+              name: https
+            - containerPort: 25
+              name: smtp
+            - containerPort: 587
+              name: submission
+            - containerPort: 465
+              name: smtps
+            - containerPort: 143
+              name: imap
+            - containerPort: 993
+              name: imaps
+            - containerPort: 4190
+              name: sieve
+            - containerPort: 110
+              name: pop3
+            - containerPort: 995
+              name: pop3s
+          volumeMounts:
+            - name: data
+              mountPath: /opt/stalwart
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: config
