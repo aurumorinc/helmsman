@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Kustomize will automatically set 'namespace: n8n' on all resources below
+namespace: n8n
+
+resources:
+  # - namespace.yaml
+  - service-account.yaml
+  - secret-store.yaml
+  - external-secret.yaml
+  - persistent-volume.yaml
+  - persistent-volume-claim.yaml
+  - deployment.yaml
+  - service.yaml
+  - scaled-object.yaml
+
+helmCharts:
+  - includeCRDs: true
+    name: n8n
+    releaseName: n8n
+    version: 2.0.1
+    repo: oci://8gears.container-registry.com/library
+    valuesFile: values.yaml
+    namespace: n8n

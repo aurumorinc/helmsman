@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-sql-proxy
+  namespace: n8n
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloud-sql-proxy
+  template:
+    metadata:
+      labels:
+        app: cloud-sql-proxy
+    spec:
+      serviceAccountName: cloud-sql-client
+      containers:
+      - name: proxy
+        # The official Google Cloud SQL Proxy image
+        image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:latest
+        args:
+          # Enable Private IP connectivity
+          - "--private-ip"
+          # Listen on all interfaces so the Service can reach it
+          - "--address=0.0.0.0"
+          - "--port=5432"
+          - "cb-n8n-prod-479922:asia-south1:asia-south1-postgres-sql"
+        ports:
+        - containerPort: 5432
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

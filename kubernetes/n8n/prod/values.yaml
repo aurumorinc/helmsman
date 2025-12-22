@@ -1,0 +1,138 @@
+# 1. Disable internal services
+postgresql:
+  enabled: false
+valkey:
+  enabled: false
+redis:
+  enabled: false
+test:
+  enabled: false
+
+# 2. Image Configuration
+image:
+  repository: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/n8n
+  tag: 1.122.4
+  pullPolicy: IfNotPresent
+
+# 3. Main Instance Configuration
+main:
+  minReplicaCount: 1
+  resources: &resources
+    requests:
+      cpu: 1000m
+      memory: 1000Mi
+
+  persistence: &persistence
+    enabled: true
+    type: existing
+    existingClaim: data
+
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 5678
+    annotations:
+      cloud.google.com/neg: '{"exposed_ports": {"5678":{}}}'
+
+  config:
+    # --- Server Configuration ---
+    N8N_LISTEN_ADDRESS: "0.0.0.0"
+    N8N_PORT: "5678"
+    GENERIC_TIMEZONE: "Asia/Kolkata"
+    TZ: "Asia/Kolkata"
+    N8N_EDITOR_BASE_URL: "https://n8n.capybaara.com"
+    
+    # --- Database (Cloud SQL) ---
+    DB_TYPE: "postgresdb"
+    DB_POSTGRESDB_HOST: "cloud-sql-proxy.n8n.svc.cluster.local"
+    DB_POSTGRESDB_PORT: "5432"
+    DB_POSTGRESDB_DATABASE: "n8n"
+    DB_POSTGRESDB_USER: "n8n"
+
+    # --- Queue (Memorystore) ---
+    EXECUTIONS_MODE: "queue"
+    QUEUE_BULL_REDIS_HOST: "redis.n8n.asia-south1.prod.capybaara.com"
+    QUEUE_HEALTH_CHECK_ACTIVE: "true"
+
+    # --- Licensing ---
+    N8N_LICENSE_SERVER_URL: "https://ee.aurumor.com"
+    N8N_LICENSE_TENANT_ID: "1"
+
+    # --- Features ---
+    N8N_RUNNERS_ENABLED: "false"
+    OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS: "true"
+    N8N_DIAGNOSTICS_ENABLED: "true"
+    
+    # --- Hybrid Setup ---
+    N8N_DISABLE_PRODUCTION_MAIN_PROCESS: "true"
+
+    # --- Binary Data ---
+    N8N_AVAILABLE_BINARY_DATA_MODES: "filesystem,s3"
+    N8N_DEFAULT_BINARY_DATA_MODE: "s3"
+    N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME: "binary-data-asia-south1-bucket-h1l0er"
+    N8N_EXTERNAL_STORAGE_S3_BUCKET_REGION: "asia-south1"
+    N8N_EXTERNAL_STORAGE_S3_HOST: "storage.googleapis.com"
+    WEBHOOK_URL: "https://n8n.capybaara.com"
+
+  extraEnv: &extraEnv
+    DB_POSTGRESDB_PASSWORD:
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: db-postgresdb-password
+    N8N_ENCRYPTION_KEY:
+      valueFrom:
+        secretKeyRef:
+          name: key
+          key: n8n-encryption-key
+    N8N_LICENSE_ACTIVATION_KEY:
+      valueFrom:
+        secretKeyRef:
+          name: license
+          key: n8n-license-activation-key
+    N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY:
+      valueFrom:
+        secretKeyRef:
+          name: access-key
+          key: n8n-external-storage-s3-access-key
+    N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: access-key
+          key: n8n-external-storage-s3-access-secret
+
+  livenessProbe: &livenessProbe
+    httpGet:
+      path: /healthz
+      port: 5678
+    initialDelaySeconds: 60
+    periodSeconds: 15
+    timeoutSeconds: 240
+    failureThreshold: 10
+
+  readinessProbe: &readinessProbe
+    httpGet:
+      path: /healthz
+      port: 5678
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 240
+    failureThreshold: 5
+
+# 5. Worker Configuration
+worker:
+  enabled: true
+  autoscaling: 
+    enabled: false
+  concurrency: 10
+  resources: *resources
+  persistence: *persistence
+  extraEnv: *extraEnv
+  livenessProbe: *livenessProbe
+  readinessProbe: *readinessProbe
+
+webhook:
+  enabled: false
+  
+ingress:
+  enabled: false
