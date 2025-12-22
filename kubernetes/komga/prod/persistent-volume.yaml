@@ -12,7 +12,7 @@ spec:
   storageClassName: regional
   nfs:
     path: /share/komga/config
-    server: 10.0.0.2
+    server: filestore.komga.asia-south1.prod.aurumor.com
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -28,4 +28,4 @@ spec:
   storageClassName: regional
   nfs:
     path: /share/resources
-    server: 10.0.0.2
+    server: filestore.komga.asia-south1.prod.aurumor.com
