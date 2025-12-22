@@ -5,8 +5,7 @@ valkey:
   enabled: false
 redis:
   enabled: false
-test:
-  enabled: false
+
 
 # 2. Image Configuration
 image:
