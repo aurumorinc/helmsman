@@ -1,0 +1,138 @@
+# 1. Image Configuration
+image:
+  repository: ghcr.io/aquiveal/fcrm
+  tag: 2025.1.1
+  pullPolicy: IfNotPresent
+
+# 2. Security Context
+securityContext:
+  capabilities:
+    add:
+      - CHOWN
+
+# 3. Database Configuration (Connect to MaxScale)
+mariadb:
+  enabled: false
+
+# MaxScale Service Name in the 'fcrm' namespace
+dbHost: maxscale.fcrm.svc.cluster.local
+dbPort: 3306
+dbRootUser: fcrm
+
+# Use the Secret synced by ExternalSecrets
+dbExistingSecret: "password"
+dbExistingSecretPasswordKey: "fcrm-user-password"
+
+# 4. Redis Configuration (GCP Memorystore)
+externalRedis:
+  cache: "redis://10.160.0.33:6379"
+  queue: "redis://10.160.0.15:6379"
+
+# Disable Dragonfly for Cache
+dragonfly-cache:
+  enabled: false
+
+# Disable Dragonfly for Queue
+dragonfly-queue:
+  enabled: false
+  
+redis-cache:
+  enabled: false
+
+redis-queue:
+  enabled: false
+
+# 5. Persistence (GCP Filestore NFS)
+persistence:
+  worker:
+    enabled: true
+    # Use the PVC created manually for Filestore
+    existingClaim: "sites"
+    accessModes:
+      - ReadWriteMany
+  logs:
+    # Disable persistent logs to simplify storage, or create a separate PVC if needed
+    enabled: false
+
+# 6. Network / LoadBalancer Access
+nginx:
+  livenessProbe:
+    tcpSocket:
+      port: 8080
+    initialDelaySeconds: 30
+    timeoutSeconds: 240
+    periodSeconds: 240
+  readinessProbe:
+    httpGet:
+      path: /api/method/ping
+      port: 8080
+      httpHeaders:
+        - name: Host
+          value: fcrm.capybaara.com
+    initialDelaySeconds: 30
+    timeoutSeconds: 240
+    periodSeconds: 240
+  service:
+    type: ClusterIP 
+    port: 8080
+    annotations:
+      cloud.google.com/neg: '{"exposed_ports": {"8080":{}}}'
+    
+    environment:
+    # 0.0.0.0/0 allows Nginx to accept headers from the GCP LB. 
+    # For stricter security, you can use GCP IP ranges: "130.211.0.0/22 35.191.0.0/16"
+    upstreamRealIPAddress: "130.211.0.0/22 35.191.0.0/16"
+    upstreamRealIPHeader: "X-Forwarded-For"
+    upstreamRealIPRecursive: "on"
+
+worker:
+  gunicorn:
+    livenessProbe:
+      httpGet:
+        path: /api/method/ping
+        port: 8000
+        httpHeaders:
+          - name: Host
+            value: fcrm.capybaara.com
+      initialDelaySeconds: 30
+      timeoutSeconds: 240
+      periodSeconds: 240
+    readinessProbe:
+      httpGet:
+        path: /api/method/ping
+        port: 8000
+        httpHeaders:
+          - name: Host
+            value: fcrm.capybaara.com
+      initialDelaySeconds: 30
+      timeoutSeconds: 240
+      periodSeconds: 240
+
+# 7. Job Configuration
+jobs:
+  # Configures common_site_config.json
+  configure:
+    enabled: true
+    fixVolume: true # Ensures permissions on the NFS share are correct
+
+  # Creates the site and installs apps
+  createSite:
+    enabled: true
+    siteName: "fcrm.capybaara.com"
+    adminPassword: "Catcall3-Sample-Slighting"
+    dbType: "mariadb"
+    installApps:
+      - crm
+
+  # Schema migration for updates
+  migrate:
+    enabled: true
+    siteName: "fcrm.capybaara.com"
+
+# 8. Ingress (Optional - if using GKE Ingress Controller)
+ingress:
+  enabled: false 
+
+# 9. Additional Configurations
+timeZone: "Asia/Kolkata"
+fullnameOverride: "fcrm"
