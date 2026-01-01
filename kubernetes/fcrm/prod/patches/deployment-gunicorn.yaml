@@ -6,6 +6,17 @@ metadata:
 spec:
   template:
     spec:
+      initContainers:
+        - name: populate-assets
+          image: "asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/fcrm:1.57.0-rc2"
+          imagePullPolicy: Always
+          command: ["bash", "-c"]
+          args:
+            - "cp -R /home/frappe/frappe-bench/sites/assets/* /assets-volume/"
+          volumeMounts:
+            - name: sites-dir
+              mountPath: /assets-volume/
+              subPath: assets
       containers:
         - name: gunicorn
           livenessProbe:
