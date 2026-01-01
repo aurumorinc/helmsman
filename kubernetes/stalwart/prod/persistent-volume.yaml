@@ -12,4 +12,4 @@ spec:
   storageClassName: regional
   nfs:
     path: /share/stalwart/config
-    server: 10.0.0.2
+    server: filestore.stalwart.asia-south1.prod.aurumor.com
