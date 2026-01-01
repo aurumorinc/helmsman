@@ -22,7 +22,7 @@ spec:
   backupRef:
     name: hourly # Using hourly allows for more granular selection
   # RFC3339 format (YYYY-MM-DDTHH:MM:SSZ)
-  targetRecoveryTime: "2025-12-21T18:00:07Z"
+  targetRecoveryTime: "2025-12-25T22:00:08Z"
   stagingStorage:
     persistentVolumeClaim:
       storageClassName: premium-rwo

@@ -12,5 +12,5 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: regional
   nfs:
-    path: /share/fcrm
+    path: /share/fcrm/sites
     server: filestore.fcrm.asia-south1.prod.aurumor.com

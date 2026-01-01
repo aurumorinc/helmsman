@@ -1,8 +1,8 @@
 # 1. Image Configuration
 image:
-  repository: ghcr.io/aquiveal/fcrm
-  tag: 2025.1.1
-  pullPolicy: IfNotPresent
+  repository: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/fcrm
+  tag: 1.57.0-rc2
+  pullPolicy: Always
 
 # 2. Security Context
 securityContext:
@@ -72,6 +72,13 @@ nginx:
     initialDelaySeconds: 30
     timeoutSeconds: 240
     periodSeconds: 240
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
   service:
     type: ClusterIP 
     port: 8080
@@ -87,6 +94,17 @@ nginx:
 
 worker:
   gunicorn:
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      targetCPU: 80
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
     livenessProbe:
       httpGet:
         path: /api/method/ping
@@ -107,6 +125,42 @@ worker:
       initialDelaySeconds: 30
       timeoutSeconds: 240
       periodSeconds: 240
+
+  default:
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+  short:
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+  long:
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+  scheduler:
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "50m"
+      limits:
+        memory: "256Mi"
+        cpu: "250m"
 
 # 7. Job Configuration
 jobs:

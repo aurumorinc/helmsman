@@ -23,19 +23,16 @@ helmCharts:
     repo: https://helm.erpnext.com
     releaseName: fcrm
     namespace: fcrm
-    version: 8.0.8
+    version: 8.0.10
     valuesFile: values.yaml
     includeCRDs: true
 
 # 3. Patch the Service to add the NEG Annotation (replaces your manual kubectl annotate)
 patches:
-  - target:
+  - path: patches/service-nginx.yaml
+    target:
       kind: Service
       name: fcrm
-    patch: |-
-      - op: add
-        path: /metadata/annotations/cloud.google.com~1neg
-        value: '{"exposed_ports": {"8080":{}}}'
   - path: patches/deployment-nginx.yaml
     target:
       kind: Deployment
