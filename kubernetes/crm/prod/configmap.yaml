@@ -27,16 +27,13 @@ data:
         TIMESTAMP=$(date +%F)
     fi
 
-    BACKUP_ROOT="/home/frappe/frappe-bench/backups/$FREQUENCY/$TIMESTAMP"
-    mkdir -p "$BACKUP_ROOT"
-
     cd /home/frappe/frappe-bench/sites
 
     # Iterate through sites
     for site in *; do
       if [ -d "$site" ] && [ -f "$site/site_config.json" ]; then
         echo "Found site: $site"
-        SITE_BACKUP_PATH="$BACKUP_ROOT/$site"
+        SITE_BACKUP_PATH="/home/frappe/frappe-bench/backups/$FREQUENCY/$site/$TIMESTAMP"
         mkdir -p "$SITE_BACKUP_PATH"
         
         # Run backup
@@ -49,4 +46,4 @@ data:
     done
     
     echo "Backup process completed."
-    ls -R "$BACKUP_ROOT"
+    ls -R "/home/frappe/frappe-bench/backups/$FREQUENCY"
