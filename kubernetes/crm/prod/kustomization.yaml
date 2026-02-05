@@ -1,0 +1,46 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Sets the namespace for all resources (except cluster-wide ones like PVs)
+namespace: crm
+
+# 1. Include all your infrastructure and database manifests
+resources:
+  - namespace.yaml
+  - service-account.yaml
+  - secret-store.yaml
+  - external-secret.yaml
+  - persistent-volume.yaml
+  - persistent-volume-claim.yaml
+  - mariadb.yaml
+  - vertical-pod-autoscaler.yaml
+  - maxscale.yaml
+  - user.yaml
+  - grant.yaml
+  - backup.yaml
+
+# 2. Integrate the crm Helm Chart
+helmCharts:
+  - name: erpnext
+    repo: https://helm.erpnext.com
+    releaseName: crm
+    namespace: crm
+    version: 8.0.19
+    valuesFile: values.yaml
+    includeCRDs: true
+
+# 3. Patch the Service to add the NEG Annotation (replaces your manual kubectl annotate)
+patches:
+  - path: patches/service-nginx.yaml
+    target:
+      kind: Service
+      name: crm
+  - target:
+      kind: Pod
+      name: crm-test-connection
+    patch: |-
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: crm-test-connection
+      $patch: delete
