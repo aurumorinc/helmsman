@@ -14,3 +14,22 @@ spec:
   nfs:
     path: /share/crm/sites
     server: filestore.crm.asia-south1.prod.aurumor.com
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: crm-backup
+spec:
+  capacity:
+    storage: 1Ti # Virtual size
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: archive
+  mountOptions:
+    - implicit-dirs
+    - uid=1000
+    - gid=1000
+  csi:
+    driver: gcsfuse.csi.storage.gke.io
+    volumeHandle: crm-backups-asia-bucket-2rbyy8

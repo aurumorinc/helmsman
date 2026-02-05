@@ -18,6 +18,8 @@ resources:
   - user.yaml
   - grant.yaml
   - backup.yaml
+  - configmap.yaml
+  - cronjobs.yaml
 
 # 2. Integrate the crm Helm Chart
 helmCharts:

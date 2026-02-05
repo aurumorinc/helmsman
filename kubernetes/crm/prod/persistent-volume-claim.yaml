@@ -11,3 +11,17 @@ spec:
     requests:
       storage: 1Ti # Must be <= the PV size
   volumeName: crm-sites # Explicitly binds to the PV created above
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup
+  namespace: crm
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: archive
+  resources:
+    requests:
+      storage: 1Ti
+  volumeName: crm-backup
