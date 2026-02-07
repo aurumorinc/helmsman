@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data
+  namespace: n8n
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: regional
+  resources:
+    requests:
+      storage: 1Ti # Must be <= the PV size
+  volumeName: n8n-data # Explicitly binds to the PV created above

@@ -1,0 +1,24 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: n8n-worker
+  namespace: n8n
+spec:
+  scaleTargetRef:
+    name: n8n-worker
+  minReplicaCount: 1
+  maxReplicaCount: 100 # Maximum number of workers
+  pollingInterval: 20 # Check Redis every 15 seconds
+  cooldownPeriod: 300 # Wait 5 minutes after queue is empty before scaling down
+  triggers:
+  - type: redis
+    metadata:
+      # Your Redis IP
+      address: "redis.n8n.asia-south1.prod.capybaara.com:6379"
+      
+      # The key you verified
+      listName: "bull:jobs:wait"
+      
+      # Target: Scale up when there are more than 10 jobs per worker
+      # (Matches your 'concurrency: 10' setting)
+      listLength: "10"
