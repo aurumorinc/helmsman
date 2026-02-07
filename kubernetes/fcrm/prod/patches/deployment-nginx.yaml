@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fcrm-nginx
+  namespace: fcrm
+spec:
+  template:
+    spec:
+      containers:
+        - name: nginx
+          livenessProbe:
+            tcpSocket: null
+            httpGet:
+              path: /api/method/ping
+              port: 8080
+              httpHeaders:
+                - name: Host
+                  value: fcrm.capybaara.com
+            initialDelaySeconds: 30
+            timeoutSeconds: 240
+            periodSeconds: 240
+          readinessProbe:
+            tcpSocket: null
+            httpGet:
+              path: /api/method/ping
+              port: 8080
+              httpHeaders:
+                - name: Host
+                  value: fcrm.capybaara.com
+            initialDelaySeconds: 30
+            timeoutSeconds: 240
+            periodSeconds: 240

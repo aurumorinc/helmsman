@@ -1,0 +1,107 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Backup
+metadata:
+  name: hourly
+  namespace: fcrm
+spec:
+  mariaDbRef:
+    name: mariadb
+  schedule:
+    cron: "0 * * * *"
+  maxRetention: 168h
+  restartPolicy: OnFailure
+  storage:
+    s3:
+      bucket: "automated-backups-asia-bucket-9tfm1t"
+      prefix: "hourly"
+      region: "asia" 
+      endpoint: "storage.googleapis.com"
+      accessKeyIdSecretKeyRef:
+        name: access-key
+        key: access-key-id
+      secretAccessKeySecretKeyRef:
+        name: access-key
+        key: secret-access-key
+      tls:
+        enabled: true
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Backup
+metadata:
+  name: daily
+  namespace: fcrm
+spec:
+  mariaDbRef:
+    name: mariadb
+  schedule:
+    cron: "0 0 * * *"
+  maxRetention: 720h
+  restartPolicy: OnFailure
+  storage:
+    s3:
+      bucket: "automated-backups-asia-bucket-9tfm1t"
+      prefix: "daily"
+      region: "asia" 
+      endpoint: "storage.googleapis.com"
+      accessKeyIdSecretKeyRef:
+        name: access-key
+        key: access-key-id
+      secretAccessKeySecretKeyRef:
+        name: access-key
+        key: secret-access-key
+      tls:
+        enabled: true
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Backup
+metadata:
+  name: weekly
+  namespace: fcrm
+spec:
+  mariaDbRef:
+    name: mariadb
+  schedule:
+    cron: "0 0 * * 0"
+  maxRetention: 2016h
+  restartPolicy: OnFailure
+  storage:
+    s3:
+      bucket: "automated-backups-asia-bucket-9tfm1t"
+      prefix: "weekly"
+      region: "asia" 
+      endpoint: "storage.googleapis.com"
+      accessKeyIdSecretKeyRef:
+        name: access-key
+        key: access-key-id
+      secretAccessKeySecretKeyRef:
+        name: access-key
+        key: secret-access-key
+      tls:
+        enabled: true
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Backup
+metadata:
+  name: monthly
+  namespace: fcrm
+spec:
+  mariaDbRef:
+    name: mariadb
+  schedule:
+    cron: "0 0 1 * *"
+  maxRetention: 8760h
+  restartPolicy: OnFailure
+  storage:
+    s3:
+      bucket: "automated-backups-asia-bucket-9tfm1t"
+      prefix: "monthly"
+      region: "asia" 
+      endpoint: "storage.googleapis.com"
+      accessKeyIdSecretKeyRef:
+        name: access-key
+        key: access-key-id
+      secretAccessKeySecretKeyRef:
+        name: access-key
+        key: secret-access-key
+      tls:
+        enabled: true
