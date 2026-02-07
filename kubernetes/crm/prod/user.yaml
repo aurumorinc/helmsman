@@ -1,0 +1,16 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: User
+metadata:
+  name: crm
+  namespace: crm
+spec:
+  # The actual username in the database
+  name: crm
+  mariaDbRef:
+    name: mariadb
+  passwordSecretKeyRef:
+    name: password
+    key: user-password
+  # "%" Allows connection from any IP (fixes the localhost restriction)
+  host: "%"
+  maxUserConnections: 100

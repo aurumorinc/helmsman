@@ -1,0 +1,33 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Restore
+metadata:
+  name: restore-point-in-time
+  namespace: crm
+spec:
+  mariaDbRef:
+    name: mariadb
+  s3:
+    bucket: "mariadb-backups-asia-bucket-62zbwu"
+    prefix: "hourly" # Ensure this matches the folder where the file is
+    region: "asia"
+    endpoint: "storage.googleapis.com"
+    accessKeyIdSecretKeyRef:
+      name: access-key
+      key: access-key-id
+    secretAccessKeySecretKeyRef:
+      name: access-key
+      key: secret-access-key
+    tls:
+      enabled: true
+  backupRef:
+    name: hourly # Using hourly allows for more granular selection
+  # RFC3339 format (YYYY-MM-DDTHH:MM:SSZ)
+  targetRecoveryTime: "2025-12-25T22:00:08Z"
+  stagingStorage:
+    persistentVolumeClaim:
+      storageClassName: premium-rwo
+      resources:
+        requests:
+          storage: 20Gi
+      accessModes:
+        - ReadWriteOnce

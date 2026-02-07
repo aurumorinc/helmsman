@@ -1,0 +1,135 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Backup
+metadata:
+  name: hourly
+  namespace: crm
+spec:
+  mariaDbRef:
+    name: mariadb
+  schedule:
+    cron: "0 * * * *"
+  maxRetention: 168h
+  restartPolicy: OnFailure
+  stagingStorage:
+    persistentVolumeClaim:
+      resources:
+        requests:
+          storage: 10Gi
+      accessModes:
+        - ReadWriteOnce
+  storage:
+    s3:
+      bucket: "mariadb-backups-asia-bucket-62zbwu"
+      prefix: "hourly"
+      region: "asia" 
+      endpoint: "storage.googleapis.com"
+      accessKeyIdSecretKeyRef:
+        name: access-key
+        key: access-key-id
+      secretAccessKeySecretKeyRef:
+        name: access-key
+        key: secret-access-key
+      tls:
+        enabled: true
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Backup
+metadata:
+  name: daily
+  namespace: crm
+spec:
+  mariaDbRef:
+    name: mariadb
+  schedule:
+    cron: "0 0 * * *"
+  maxRetention: 720h
+  restartPolicy: OnFailure
+  stagingStorage:
+    persistentVolumeClaim:
+      resources:
+        requests:
+          storage: 10Gi
+      accessModes:
+        - ReadWriteOnce
+  storage:
+    s3:
+      bucket: "mariadb-backups-asia-bucket-62zbwu"
+      prefix: "daily"
+      region: "asia" 
+      endpoint: "storage.googleapis.com"
+      accessKeyIdSecretKeyRef:
+        name: access-key
+        key: access-key-id
+      secretAccessKeySecretKeyRef:
+        name: access-key
+        key: secret-access-key
+      tls:
+        enabled: true
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Backup
+metadata:
+  name: weekly
+  namespace: crm
+spec:
+  mariaDbRef:
+    name: mariadb
+  schedule:
+    cron: "0 0 * * 0"
+  maxRetention: 2016h
+  restartPolicy: OnFailure
+  stagingStorage:
+    persistentVolumeClaim:
+      resources:
+        requests:
+          storage: 10Gi
+      accessModes:
+        - ReadWriteOnce
+  storage:
+    s3:
+      bucket: "mariadb-backups-asia-bucket-62zbwu"
+      prefix: "weekly"
+      region: "asia" 
+      endpoint: "storage.googleapis.com"
+      accessKeyIdSecretKeyRef:
+        name: access-key
+        key: access-key-id
+      secretAccessKeySecretKeyRef:
+        name: access-key
+        key: secret-access-key
+      tls:
+        enabled: true
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Backup
+metadata:
+  name: monthly
+  namespace: crm
+spec:
+  mariaDbRef:
+    name: mariadb
+  schedule:
+    cron: "0 0 1 * *"
+  maxRetention: 8760h
+  restartPolicy: OnFailure
+  stagingStorage:
+    persistentVolumeClaim:
+      resources:
+        requests:
+          storage: 10Gi
+      accessModes:
+        - ReadWriteOnce
+  storage:
+    s3:
+      bucket: "mariadb-backups-asia-bucket-62zbwu"
+      prefix: "monthly"
+      region: "asia" 
+      endpoint: "storage.googleapis.com"
+      accessKeyIdSecretKeyRef:
+        name: access-key
+        key: access-key-id
+      secretAccessKeySecretKeyRef:
+        name: access-key
+        key: secret-access-key
+      tls:
+        enabled: true

@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-script
+  namespace: crm
+data:
+  backup.sh: |
+    #!/bin/bash
+    set -e
+
+    # Frequency argument (hourly, daily, monthly)
+    FREQUENCY=$1
+    
+    if [ -z "$FREQUENCY" ]; then
+      echo "Error: Frequency argument required (hourly, daily, monthly)"
+      exit 1
+    fi
+
+    echo "Starting $FREQUENCY backup..."
+
+    # Define paths
+    # Hourly needs timestamp (YYYY-MM-DD-HHMM)
+    # Daily/Monthly just need date (YYYY-MM-DD)
+    if [ "$FREQUENCY" == "hourly" ]; then
+        TIMESTAMP=$(date +%F-%H%M)
+    else
+        TIMESTAMP=$(date +%F)
+    fi
+
+    cd /home/frappe/frappe-bench/sites
+
+    # Iterate through sites
+    for site in *; do
+      if [ -d "$site" ] && [ -f "$site/site_config.json" ]; then
+        echo "Found site: $site"
+        SITE_BACKUP_PATH="/home/frappe/frappe-bench/backups/$FREQUENCY/$site/$TIMESTAMP"
+        mkdir -p "$SITE_BACKUP_PATH"
+        
+        # Run backup
+        if bench --site "$site" backup --with-files --backup-path "$SITE_BACKUP_PATH"; then
+            echo "✓ [$FREQUENCY] Backup success for $site"
+        else
+            echo "✗ [$FREQUENCY] Backup FAILED for $site"
+        fi
+      fi
+    done
+    
+    echo "Backup process completed."
+    ls -R "/home/frappe/frappe-bench/backups/$FREQUENCY"
