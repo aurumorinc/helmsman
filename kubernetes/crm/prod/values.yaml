@@ -1,7 +1,7 @@
 # 1. Image Configuration
 image:
-  repository: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/frappe
-  tag: v16.3.0-rc13
+  repository: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/crm
+  tag: latest
   pullPolicy: Always
 
 # 2. Security Context
@@ -111,7 +111,7 @@ worker:
   gunicorn:
     initContainers:
       - name: populate-assets
-        image: "asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/frappe:v16.3.0-rc13"
+        image: "asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/crm:latest"
         imagePullPolicy: Always
         command: ["bash", "-c"]
         args:
