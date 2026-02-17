@@ -49,4 +49,4 @@ patches:
 
 images:
   - name: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/crm
-    newTag: v16.5.0-rc5
+    newTag: v16.6.0-rc.31
