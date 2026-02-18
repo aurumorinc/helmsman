@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Sets the namespace for all resources (except cluster-wide ones like PVs)
+namespace: waha
+
+# 1. Include all your infrastructure and database manifests
+resources:
+  - namespace.yaml
+  - service-account.yaml
+  - secret-store.yaml
+  - external-secret.yaml
+  - deployment.yaml
+  - service.yaml
+
+images:
+  - name: devlikeapro/waha
+    newTag: chrome
