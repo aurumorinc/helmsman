@@ -7,11 +7,16 @@ namespace: waha
 # 1. Include all your infrastructure and database manifests
 resources:
   - namespace.yaml
+  - deployment.yaml
   - service-account.yaml
   - secret-store.yaml
-  - external-secret.yaml
-  - deployment.yaml
-  - service.yaml
+
+helmCharts:
+  - name: waha
+    includeCRDs: false
+    valuesFile: values.yaml
+    releaseName: waha
+    path: ../chart
 
 images:
   - name: devlikeapro/waha

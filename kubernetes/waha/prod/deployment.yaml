@@ -1,104 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: waha
-  labels:
-    app: waha
+  name: cloud-sql-proxy
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: waha
+      app: cloud-sql-proxy
   template:
     metadata:
       labels:
-        app: waha
+        app: cloud-sql-proxy
     spec:
-      serviceAccountName: storage-folder-admin
+      serviceAccountName: cloud-sql-client
       containers:
-        - name: waha
-          image: devlikeapro/waha
-          ports:
-            - containerPort: 3000
-          env:
-            # Basic Config
-            - name: WAHA_LOG_FORMAT
-              value: "JSON"
-            - name: WAHA_PRINT_QR
-              value: "False"
-            
-            # Dashboard & API
-            - name: WAHA_DASHBOARD_ENABLED
-              value: "True"
-            - name: WAHA_DASHBOARD_USERNAME
-              value: "aquiveal"
-            - name: WHATSAPP_SWAGGER_USERNAME
-              value: "aquiveal"
-            - name: WHATSAPP_SWAGGER_ENABLED
-              value: "True"
-            - name: WAHA_BASE_URL
-              value: "https://waha.aurumor.com"
-            - name: WAHA_PUBLIC_URL
-              value: "https://waha.aurumor.com"
-            - name: WHATSAPP_DEFAULT_ENGINE
-              value: "WEBJS"
-            - name: WHATSAPP_DOWNLOAD_MEDIA
-              value: "true"
-            - name: TZ
-              value: "Asia/Kolkata"
-            
-            # Secrets
-            - name: WAHA_DASHBOARD_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: password
-                  key: dashboard-password
-            - name: WHATSAPP_SWAGGER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: password
-                  key: dashboard-password
-            - name: WAHA_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: api
-                  key: api-key
-
-            # Storage - Sessions (Postgres)
-            - name: WHATSAPP_SESSIONS_POSTGRESQL_URL
-              valueFrom:
-                secretKeyRef:
-                  name: database-url
-                  key: session-database-url
-
-            # Storage - Media (S3/GCS)
-            - name: WAHA_MEDIA_STORAGE
-              value: "S3"
-            - name: WAHA_S3_BUCKET
-              value: "media-asia-south1-bucket-her2ge"
-            - name: WAHA_S3_REGION
-              value: "asia-south1"
-            - name: WAHA_S3_ENDPOINT
-              value: "https://storage.googleapis.com"
-            - name: WAHA_S3_FORCE_PATH_STYLE
-              value: "True"
-            - name: WAHA_S3_PROXY_FILES
-              value: "True"
-            - name: WAHA_S3_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: access-key
-                  key: access-key-id
-            - name: WAHA_S3_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: access-key
-                  key: secret-access-key
-          
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "512Mi"
-            limits:
-              cpu: "1000m"
-              memory: "1Gi"
+      - name: proxy
+        # The official Google Cloud SQL Proxy image
+        image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:latest
+        args:
+          # Enable Private IP connectivity
+          - "--private-ip"
+          # Listen on all interfaces so the Service can reach it
+          - "--address=0.0.0.0"
+          - "--port=5432"
+          - "au-waha-prod-335035:asia-south1:asia-south1-postgres-sql"
+        ports:
+        - containerPort: 5432
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

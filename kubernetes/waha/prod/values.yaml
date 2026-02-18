@@ -1,0 +1,83 @@
+# Default values for waha.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: devlikeapro/waha
+  tag: latest
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: "storage-folder-admin"
+
+# Global Waha Configuration
+waha:
+  logFormat: "JSON"
+  printQr: "False"
+  dashboardEnabled: "True"
+  swaggerEnabled: "True"
+  defaultEngine: "WEBJS"
+  downloadMedia: "true"
+  mediaStorage: "S3"
+  dbHost: "cloud-sql-proxy.waha.svc.cluster.local"
+  dbUser: "waha"
+  s3:
+    bucket: "media-asia-south1-bucket-her2ge"
+    region: "asia-south1"
+    endpoint: "https://storage.googleapis.com"
+    forcePathStyle: "True"
+    proxyFiles: "True"
+
+# Main Instance Configuration
+main:
+  enabled: true
+  baseUrl: "https://waha.aurumor.com"
+  publicUrl: "https://waha.aurumor.com"
+  dashboardUsername: "aquiveal"
+  swaggerUsername: "aquiveal"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+
+# User Instances Configuration
+# Define users here to spawn dedicated Waha instances
+users:
+  - name: aquiveal
+    host: "aryans-waha.aurumor.com"
+    baseUrl: "https://aryans-waha.aurumor.com"
+    publicUrl: "https://aryans-waha.aurumor.com"
+  - name: deathman
+    host: "abhisheks-waha.aurumor.com"
+    baseUrl: "https://abhisheks-waha.aurumor.com"
+    publicUrl: "https://abhisheks-waha.aurumor.com"
+
+# Gateway (Nginx) Configuration
+gateway:
+  enabled: true
+  image: nginx:alpine
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 3000
+
+# External Secrets Configuration (GCP Secret Manager)
+externalSecrets:
+  enabled: true
+  storeName: gcp-secret-manager
+  refreshInterval: 1h
+  # Mapping of local secret keys to remote GCP Secret Manager keys
+  keys:
+    dashboardPassword: WAHA_DASHBOARD_PASSWORD
+    swaggerPassword: WHATSAPP_SWAGGER_PASSWORD
+    apiKey: WAHA_API_KEY
+    accessKeyId: WAHA_S3_ACCESS_KEY_ID
+    secretAccessKey: WAHA_S3_SECRET_ACCESS_KEY
+    databasePassword: DATABASE_PASSWORD
