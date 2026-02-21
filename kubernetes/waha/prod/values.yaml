@@ -48,13 +48,15 @@ main:
       memory: "1Gi"
 
 # User Instances Configuration
-# Define users here to spawn dedicated Waha instances
-users:
+# Define user here to spawn dedicated Waha instances
+user:
   - name: aquiveal
+    startSession: "default"
     host: "aryans-waha.aurumor.com"
     baseUrl: "https://aryans-waha.aurumor.com"
     publicUrl: "https://aryans-waha.aurumor.com"
   - name: deathman
+    startSession: "default"
     host: "abhisheks-waha.aurumor.com"
     baseUrl: "https://abhisheks-waha.aurumor.com"
     publicUrl: "https://abhisheks-waha.aurumor.com"
@@ -63,7 +65,7 @@ users:
 gateway:
   enabled: true
   image: nginx:alpine
-  replicaCount: 1
+  replicaCount: 2
   service:
     type: ClusterIP
     port: 3000

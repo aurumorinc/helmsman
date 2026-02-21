@@ -8,15 +8,18 @@ namespace: waha
 resources:
   - namespace.yaml
   - deployment.yaml
+  - service.yaml
   - service-account.yaml
   - secret-store.yaml
 
+helmGlobals:
+  chartHome: ..
+
 helmCharts:
-  - name: waha
+  - name: chart
     includeCRDs: false
     valuesFile: values.yaml
     releaseName: waha
-    path: ../chart
 
 images:
   - name: devlikeapro/waha
