@@ -28,18 +28,18 @@ Ensure your Secret Manager has the following keys (configurable in `values.yaml`
 | `WHATSAPP_SESSIONS_POSTGRESQL_URL` | Full DB URL for the **Main** instance. |
 | `DATABASE_PASSWORD` | **Raw Password** for the database user (used to construct user DB URLs). |
 
-### Users
-To add users, update `values.yaml`:
+### User
+To add user, update `values.yaml`:
 
 ```yaml
-users:
+user:
   - name: client1
-    baseUrl: "https://waha.aurumor.com/users/client1"
-    publicUrl: "https://waha.aurumor.com/users/client1"
+    baseUrl: "https://waha.aurumor.com/user/client1"
+    publicUrl: "https://waha.aurumor.com/user/client1"
     # dashboardUsername: "client1" # Optional override
   - name: client2
-    baseUrl: "https://waha.aurumor.com/users/client2"
-    publicUrl: "https://waha.aurumor.com/users/client2"
+    baseUrl: "https://waha.aurumor.com/user/client2"
+    publicUrl: "https://waha.aurumor.com/user/client2"
 ```
 
 The system will automatically configure the database connection string for `client1` as:
@@ -55,11 +55,11 @@ The system will automatically configure the database connection string for `clie
 2. **Verify**:
    - The `waha` Service should point to the Nginx Gateway.
    - Accessing `/` should route to the Main Dashboard.
-   - Accessing `/users/client1/` should route to the Client 1 instance.
+   - Accessing `/user/client1/` should route to the Client 1 instance.
 
 ## Architecture
 
 - **Gateway**: Nginx reverse proxy. Handles routing based on path.
 - **Main Instance**: The primary Waha deployment.
 - **User Instances**: Scalable independent deployments per user.
-- **Database**: All instances share the Postgres host but use different databases (`waha` for main, `waha-{user}` for users).
+- **Database**: All instances share the Postgres host but use different databases (`waha` for main, `waha-{user}` for user).

@@ -29,4 +29,4 @@ Prefix based on the Helm Release name (default: `waha`).
 
 ## URLs (Ingress/Gateway)
 - **Main**: `https://<domain>/`
-- **User**: `https://<domain>/users/{{ .user.name }}/`
+- **User**: `https://<domain>/user/{{ .user.name }}/`
