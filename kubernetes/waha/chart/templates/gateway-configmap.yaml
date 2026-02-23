@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "waha.fullname" . }}-gateway-config
+  labels:
+    {{- include "waha.labels" . | nindent 4 }}
+    app.kubernetes.io/component: gateway
+data:
+  default.conf: |
+    # Main Instance (Default)
+    server {
+        listen 3000 default_server;
+        absolute_redirect off;
+
+        # Health check endpoint
+        location /healthz {
+            return 200 'OK';
+            add_header Content-Type text/plain;
+        }
+
+        location / {
+            proxy_pass http://{{ include "waha.fullname" . }}-main:3000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            
+            # WebSocket support
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+    }
+
+    # User Waha Instances
+    {{- range .Values.user }}
+    server {
+        listen 3000;
+        server_name {{ .host }};
+        absolute_redirect off;
+
+        location / {
+            proxy_pass http://{{ include "waha.fullname" $ }}-{{ .name }}:3000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # WebSocket support
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+    }
+    {{- end }}

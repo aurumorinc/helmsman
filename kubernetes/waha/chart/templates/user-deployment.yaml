@@ -1,0 +1,166 @@
+{{- range .Values.user }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "waha.fullname" $ }}-{{ .name }}
+  labels:
+    {{- include "waha.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: user-{{ .name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "waha.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: user-{{ .name }}
+  template:
+    metadata:
+      labels:
+        {{- include "waha.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: user-{{ .name }}
+    spec:
+      serviceAccountName: default
+      initContainers:
+        - name: create-db
+          image: postgres:alpine
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          command:
+            - sh
+            - -c
+            - |
+              echo "Checking/Creating database $TARGET_DB..."
+              if ! psql -h "$PGHOST" -U "$PGUSER" -d waha -lqt | cut -d \| -f 1 | grep -qw "$TARGET_DB"; then
+                psql -h "$PGHOST" -U "$PGUSER" -d waha -c "CREATE DATABASE \"$TARGET_DB\";"
+                echo "Database $TARGET_DB created."
+              else
+                echo "Database $TARGET_DB already exists."
+              fi
+          env:
+            - name: PGHOST
+              value: {{ $.Values.waha.dbHost | quote }}
+            - name: PGUSER
+              value: {{ $.Values.waha.dbUser | quote }}
+            - name: TARGET_DB
+              value: "waha-{{ .name }}"
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: password
+                  key: database-password
+      containers:
+        - name: waha
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  wget --spider --user="${WAHA_DASHBOARD_USERNAME}" --password="${WAHA_DASHBOARD_PASSWORD}" http://localhost:3000/dashboard
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          env:
+            # Basic Config
+            - name: WAHA_LOG_FORMAT
+              value: {{ $.Values.waha.logFormat | quote }}
+            - name: WAHA_PRINT_QR
+              value: {{ $.Values.waha.printQr | quote }}
+            
+            # Dashboard & API
+            - name: WAHA_DASHBOARD_ENABLED
+              value: {{ $.Values.waha.dashboardEnabled | quote }}
+            - name: WAHA_DASHBOARD_USERNAME
+              value: {{ default $.Values.main.dashboardUsername .dashboardUsername | quote }}
+            - name: WHATSAPP_SWAGGER_USERNAME
+              value: {{ default $.Values.main.swaggerUsername .swaggerUsername | quote }}
+            - name: WHATSAPP_SWAGGER_ENABLED
+              value: {{ $.Values.waha.swaggerEnabled | quote }}
+            - name: WAHA_BASE_URL
+              value: {{ .baseUrl | quote }}
+            - name: WAHA_PUBLIC_URL
+              value: {{ .publicUrl | quote }}
+            - name: WHATSAPP_DEFAULT_ENGINE
+              value: {{ $.Values.waha.defaultEngine | quote }}
+            - name: WHATSAPP_DOWNLOAD_MEDIA
+              value: {{ $.Values.waha.downloadMedia | quote }}
+            - name: WAHA_APPS_ENABLED
+              value: {{ $.Values.waha.apps.enabled | quote }}
+            - name: WAHA_APPS_ON
+              value: {{ $.Values.waha.apps.on | quote }}
+            - name: WHATSAPP_START_SESSION
+              value: {{ default .name .startSession | quote }}
+            - name: WAHA_WORKER_ID
+              value: {{ default .name .workerId | quote }}
+            - name: TZ
+              value: "Asia/Kolkata"
+            
+            # Secrets
+            - name: WAHA_DASHBOARD_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: password
+                  key: dashboard-password
+            - name: WHATSAPP_SWAGGER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: password
+                  key: swagger-password
+            - name: WAHA_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: api
+                  key: api-key
+            
+            # Storage - Sessions (Postgres) - UNIQUE PER USER
+            - name: WAHA_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: password
+                  key: database-password
+            - name: WHATSAPP_SESSIONS_POSTGRESQL_URL
+              value: "postgres://{{ $.Values.waha.dbUser }}:$(WAHA_DB_PASSWORD)@{{ $.Values.waha.dbHost }}:5432/waha-{{ .name }}"
+            
+            # Storage - Media (S3/GCS)
+            - name: WAHA_MEDIA_STORAGE
+              value: {{ $.Values.waha.mediaStorage | quote }}
+            - name: WAHA_S3_BUCKET
+              value: {{ $.Values.waha.s3.bucket | quote }}
+            - name: WAHA_S3_REGION
+              value: {{ $.Values.waha.s3.region | quote }}
+            - name: WAHA_S3_ENDPOINT
+              value: {{ $.Values.waha.s3.endpoint | quote }}
+            - name: WAHA_S3_FORCE_PATH_STYLE
+              value: {{ $.Values.waha.s3.forcePathStyle | quote }}
+            - name: WAHA_S3_PROXY_FILES
+              value: {{ $.Values.waha.s3.proxyFiles | quote }}
+            - name: WAHA_S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: access-key
+                  key: access-key-id
+            - name: WAHA_S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: access-key
+                  key: secret-access-key
+          
+          resources:
+            {{- toYaml $.Values.main.resources | nindent 12 }}
+---
+{{- end }}
