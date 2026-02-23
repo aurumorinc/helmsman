@@ -23,6 +23,9 @@ waha:
   defaultEngine: "WEBJS"
   downloadMedia: "true"
   mediaStorage: "S3"
+  apps:
+    enabled: "True"
+    on: "chatwoot"
   dbHost: "cloud-sql-proxy.waha.svc.cluster.local"
   dbUser: "waha"
   s3:
