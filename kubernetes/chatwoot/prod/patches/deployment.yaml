@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatwoot-web
+spec:
+  template:
+    spec:
+      containers:
+        - name: chatwoot-web
+          env:
+            - name: GCS_CREDENTIALS
+              valueFrom:
+                secretKeyRef:
+                  name: credential
+                  key: gcs-credentials
+            - name: REDIS_URL
+              value: redis://valkey.chatwoot.asia-south1.prod.aurumor.com:6379
+            - name: REDIS_PASSWORD
+              value: ""
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: password
+                  key: smtp-password
+            - name: GOOGLE_OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: oauth
+                  key: google-oauth-client-id
+            - name: GOOGLE_OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth
+                  key: google-oauth-client-secret
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: secret
+                  key: secret-key-base
+          livenessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  wget --spider http://localhost:3000
+            initialDelaySeconds: 60
+            periodSeconds: 10
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatwoot-worker
+spec:
+  template:
+    spec:
+      containers:
+        - name: chatwoot-workers
+          env:
+            - name: GCS_CREDENTIALS
+              valueFrom:
+                secretKeyRef:
+                  name: credential
+                  key: gcs-credentials
+            - name: REDIS_URL
+              value: redis://valkey.chatwoot.asia-south1.prod.aurumor.com:6379
+            - name: REDIS_PASSWORD
+              value: ""
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: password
+                  key: smtp-password
+            - name: GOOGLE_OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: oauth
+                  key: google-oauth-client-id
+            - name: GOOGLE_OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth
+                  key: google-oauth-client-secret
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: secret
+                  key: secret-key-base

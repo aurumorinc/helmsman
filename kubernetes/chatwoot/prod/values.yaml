@@ -1,0 +1,84 @@
+# Chatwoot Helm Chart Values
+# Reference: kubernetes/chatwoot/charts/charts/chatwoot/values.yaml
+
+# 1. Database Configuration (Connecting to external Cloud SQL via Proxy)
+postgresql:
+  enabled: false
+  postgresqlHost: cloud-sql-proxy.chatwoot.svc.cluster.local
+  postgresqlPort: 5432
+  auth:
+    database: chatwoot
+    username: chatwoot
+    # Use the Secret synced by ExternalSecrets
+    existingSecret: "password"
+    secretKeys:
+      adminPasswordKey: "database-password"
+
+# 2. Redis Configuration (External Valkey)
+redis:
+  enabled: false
+  host: valkey.chatwoot.asia-south1.prod.aurumor.com
+  port: 6379
+
+# 3. Storage Configuration (Google Cloud Storage)
+env:
+  ACTIVE_STORAGE_SERVICE: google
+  GCS_BUCKET: asia-south1-bucket-46l0wy
+  GCS_PROJECT: au-chatwoot-prod-675128
+
+  # General
+  FRONTEND_URL: "https://chatwoot.aurumor.com"
+  RAILS_ENV: "production"
+  INSTALLATION_ENV: helm
+
+  # Google OAuth
+  GOOGLE_OAUTH_CALLBACK_URL: "https://chatwoot.aurumor.com/google/callback"
+
+  # SMTP Configuration
+  MAILER_SENDER_EMAIL: "chatwoot@aurumor.com"
+  SMTP_ADDRESS: "stalwart.aurumor.com"
+  SMTP_PORT: 587
+  SMTP_AUTHENTICATION: "plain"
+  SMTP_ENABLE_STARTTLS_AUTO: true
+  SMTP_OPENSSL_VERIFY_MODE: "none"
+  SMTP_USERNAME: "chatwootxaurumor"
+  # SMTP_PASSWORD is fetched from the 'password' ExternalSecret
+  ENABLE_ACCOUNT_SIGNUP: false
+  IMAP_CONTACTS_ONLY_EMAILS: "aquiveal@aurumor.com, aryan.singh@aurumor.com, abhishek.pushkar@aurumor.com, anandita@pennyjaar.com, nyamat.cheema@pennyjaar.com"
+  
+# 4. Ingress / Load Balancing
+service:
+  type: ClusterIP
+
+# 5. Environment Secrets
+# SECRET_KEY_BASE is fetched from the 'secret' ExternalSecret
+
+# 6. Image Configuration
+image:
+  repository: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/chatwoot
+  tag: develop.rc2
+  pullPolicy: IfNotPresent
+
+# 7. Service Account
+serviceAccount:
+  create: false
+  name: cloud-sql-client
+
+# 8. Resource Configuration
+web:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1
+      memory: 2Gi
+
+worker:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1
+      memory: 2Gi
