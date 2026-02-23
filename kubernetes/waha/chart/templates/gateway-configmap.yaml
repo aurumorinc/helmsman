@@ -33,7 +33,7 @@ data:
     }
 
     # User Waha Instances
-    {{- range .Values.users }}
+    {{- range .Values.user }}
     server {
         listen 3000;
         server_name {{ .host }};

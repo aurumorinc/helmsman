@@ -1,4 +1,4 @@
-{{- range .Values.users }}
+{{- range .Values.user }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -67,9 +67,12 @@ spec:
             initialDelaySeconds: 15
             periodSeconds: 20
           readinessProbe:
-            httpGet:
-              path: /dashboard
-              port: http
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  wget --spider --user="${WAHA_DASHBOARD_USERNAME}" --password="${WAHA_DASHBOARD_PASSWORD}" http://localhost:3000/dashboard
             initialDelaySeconds: 5
             periodSeconds: 10
           env:
@@ -96,6 +99,10 @@ spec:
               value: {{ $.Values.waha.defaultEngine | quote }}
             - name: WHATSAPP_DOWNLOAD_MEDIA
               value: {{ $.Values.waha.downloadMedia | quote }}
+            - name: WAHA_APPS_ENABLED
+              value: {{ $.Values.waha.apps.enabled | quote }}
+            - name: WAHA_APPS_ON
+              value: {{ $.Values.waha.apps.on | quote }}
             - name: WHATSAPP_START_SESSION
               value: {{ default .name .startSession | quote }}
             - name: WAHA_WORKER_ID
