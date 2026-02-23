@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Sets the namespace for all resources
+namespace: chatwoot
+
+# 1. Include all your infrastructure and database manifests
+resources:
+  - namespace.yaml
+  - service-account.yaml
+  - secret-store.yaml
+  - external-secret.yaml
+  - deployment.yaml
+  - service.yaml
+
+# 2. Integrate the chatwoot Helm Chart
+helmCharts:
+  - name: chatwoot
+    repo: https://chatwoot.github.io/charts
+    releaseName: chatwoot
+    namespace: chatwoot
+    version: 2.0.11
+    valuesFile: values.yaml
+    includeCRDs: true
+
+# 3. Patches
+patches:
+  - path: patches/service.yaml
+    target:
+      kind: Service
+      name: chatwoot
+  - path: patches/deployment.yaml
+  - path: patches/job.yaml
+    target:
+      kind: Job
+      name: chatwoot-migrate
+  - path: patches/pod.yaml
+    target:
+      kind: Pod
+      name: chatwoot-test-connection
