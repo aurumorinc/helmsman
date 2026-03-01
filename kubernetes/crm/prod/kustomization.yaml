@@ -13,13 +13,13 @@ resources:
   - persistent-volume.yaml
   - persistent-volume-claim.yaml
   - mariadb.yaml
-  - vertical-pod-autoscaler.yaml
   - maxscale.yaml
   - user.yaml
   - grant.yaml
   - backup.yaml
   - configmap.yaml
-  - cronjobs.yaml
+  - cronjob.yaml
+  - job.yaml
 
 # 2. Integrate the crm Helm Chart
 helmCharts:
@@ -33,10 +33,18 @@ helmCharts:
 
 # 3. Patch the Service to add the NEG Annotation (replaces your manual kubectl annotate)
 patches:
-  - path: patches/service-nginx.yaml
+  - path: patches/service.yaml
     target:
       kind: Service
       name: crm
+  - path: patches/job-create-site.yaml
+    target:
+      kind: Job
+      name: "^.*-new-site-.*$"
+  - path: patches/job-migrate-site.yaml
+    target:
+      kind: Job
+      name: "^.*-migrate-.*$"
   - target:
       kind: Pod
       name: crm-test-connection
@@ -49,4 +57,4 @@ patches:
 
 images:
   - name: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/crm
-    newTag: v16.6.0-rc.31
+    newTag: v16.10.6-rc.2
