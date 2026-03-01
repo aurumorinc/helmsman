@@ -1,0 +1,66 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ".*"
+spec:
+  template:
+    spec:
+      containers:
+      - name: create-site
+        command: ["bash", "-c"]
+        args:
+          - |
+            set -x;
+            
+            # Use SITE_NAME directly or split if comma separated
+            IFS=',' read -r -a site_array <<< "${SITE_NAME}"
+            for site in "${site_array[@]}"; do
+              site=$(echo "$site" | xargs)
+              if [ -z "$site" ]; then continue; fi
+              
+              echo "Creating site: $site"
+              
+              # Reconstruct apps args
+              INSTALL_APPS_ARGS=""
+              if [ -n "$APPS" ]; then
+                IFS=',' read -r -a app_array <<< "$APPS"
+                for app in "${app_array[@]}"; do
+                  app=$(echo "$app" | xargs)
+                  if [ -n "$app" ]; then
+                    INSTALL_APPS_ARGS="$INSTALL_APPS_ARGS --install-app=$app"
+                  fi
+                done
+              fi
+              
+              set +e
+              bench_output=$(bench new-site ${site} \
+                --mariadb-user-host-login-scope='%' \
+                --no-mariadb-socket \
+                --db-type=${DB_TYPE} \
+                --db-host=${DB_HOST} \
+                --db-port=${DB_PORT} \
+                --admin-password=${ADMIN_PASSWORD} \
+                --mariadb-root-username=${DB_ROOT_USER} \
+                --mariadb-root-password=${DB_ROOT_PASSWORD} \
+                $INSTALL_APPS_ARGS 2>&1)
+              exit_code=$?
+              set -e
+              
+              echo "$bench_output"
+              
+              if [ $exit_code -ne 0 ]; then
+                if [[ "$bench_output" == *"already exists"* ]] || [[ "$bench_output" == *"Database"* && "$bench_output" == *"exists"* ]]; then
+                  echo "Site $site already exists, proceeding..."
+                else
+                  echo "Site creation failed."
+                  exit $exit_code
+                fi
+              fi
+              
+              bench --site "$site" enable-scheduler || true
+            done
+            
+            rm -f currentsite.txt
+        env:
+        - name: APPS
+          value: "crm"

@@ -28,11 +28,10 @@ externalRedis:
   cache: "redis://cache.valkey.crm.asia-south1.prod.aurumor.com:6379"
   queue: "redis://queue.valkey.crm.asia-south1.prod.aurumor.com:6379"
 
-# Disable Dragonfly for Cache
+# Disable internal Redis and Dragonfly components
 dragonfly-cache:
   enabled: false
 
-# Disable Dragonfly for Queue
 dragonfly-queue:
   enabled: false
   
@@ -62,11 +61,14 @@ persistence:
 
 # 6. Network / LoadBalancer Access
 nginx:
+  # Autoscaling to handle variable load, especially during peak hours or marketing campaigns
   autoscaling:
     enabled: true
     minReplicas: 2
-    maxReplicas: 3
+    maxReplicas: 100
     targetCPU: 80
+
+  # Probes to ensure GCP LB health checks work correctly
   livenessProbe:
     tcpSocket: null
     httpGet:
@@ -78,6 +80,7 @@ nginx:
     initialDelaySeconds: 30
     timeoutSeconds: 240
     periodSeconds: 240
+
   readinessProbe:
     tcpSocket: null
     httpGet:
@@ -89,13 +92,17 @@ nginx:
     initialDelaySeconds: 30
     timeoutSeconds: 240
     periodSeconds: 240
+
+  # Resources to ensure the Nginx Ingress Controller can handle traffic efficiently
   resources:
     requests:
-      memory: "256Mi"
-      cpu: "100m"
+      memory: "64Mi"
+      cpu: "50m"
     limits:
-      memory: "512Mi"
-      cpu: "500m"
+      memory: "256Mi"
+      cpu: "200m"
+      
+  # NEG Annotations for GCP Load Balancer integration
   service:
     type: ClusterIP
     port: 8080
@@ -109,6 +116,8 @@ nginx:
 
 worker:
   gunicorn:
+
+    # initContainer to copy assets from the image to the NFS share before the worker starts
     initContainers:
       - name: populate-assets
         image: "asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/crm:latest"
@@ -122,22 +131,29 @@ worker:
             subPath: assets
         resources:
           requests:
-            memory: "128Mi"
+            memory: "64Mi"
             cpu: "50m"
           limits:
             memory: "256Mi"
-            cpu: "250m"
+            cpu: "200m"
+
+    # Autoscaling to handle variable load
     autoscaling:
       enabled: true
       minReplicas: 2
+      maxReplicas: 100
       targetCPU: 80
+
+    # Resources to ensure the worker can handle application load efficiently
     resources:
       requests:
         memory: "512Mi"
-        cpu: "500m"
+        cpu: "50m"
       limits:
-        memory: "1Gi"
-        cpu: "1000m"
+        memory: "2Gi"
+        cpu: "200m"
+
+    # Probes to ensure the worker is healthy and ready to serve traffic, which also helps GCP LB health checks
     livenessProbe:
       tcpSocket: null
       httpGet:
@@ -149,6 +165,7 @@ worker:
       initialDelaySeconds: 30
       timeoutSeconds: 240
       periodSeconds: 240
+
     readinessProbe:
       tcpSocket: null
       httpGet:
@@ -161,10 +178,11 @@ worker:
       timeoutSeconds: 240
       periodSeconds: 240
 
+  # Resource configurations for different worker types
   default:
     resources:
       requests:
-        memory: "512Mi"
+        memory: "256Mi"
         cpu: "250m"
       limits:
         memory: "1Gi"
@@ -173,7 +191,7 @@ worker:
   short:
     resources:
       requests:
-        memory: "512Mi"
+        memory: "256Mi"
         cpu: "250m"
       limits:
         memory: "1Gi"
@@ -182,7 +200,7 @@ worker:
   long:
     resources:
       requests:
-        memory: "512Mi"
+        memory: "256Mi"
         cpu: "250m"
       limits:
         memory: "1Gi"
@@ -192,19 +210,19 @@ worker:
     resources:
       requests:
         memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "400m"
+
+  socketio:
+    resources:
+      requests:
+        memory: "128Mi"
         cpu: "50m"
       limits:
-        memory: "256Mi"
-        cpu: "250m"
-
-socketio:
-  resources:
-    requests:
-      memory: "256Mi"
-      cpu: "100m"
-    limits:
-      memory: "512Mi"
-      cpu: "500m"
+        memory: "512Mi"
+        cpu: "200m"
 
 # 7. Job Configuration
 jobs:
@@ -215,41 +233,34 @@ jobs:
     resources:
       requests:
         memory: "128Mi"
-        cpu: "100m"
+        cpu: "50m"
       limits:
-        memory: "256Mi"
-        cpu: "500m"
+        memory: "512Mi"
+        cpu: "200m"
 
   # Creates the site and installs apps
   createSite:
     enabled: true
-    siteName: "crm.pennyjaar.com"
-    adminExistingSecret: "password"
-    adminExistingSecretKey: "admin-password"
-    dbType: "mariadb"
-    installApps:
-      - crm
-      - offsite_backup
-      - frappe_whatsapp
+    siteName: "crm.pennyjaar.com, crm.capybaara.com"
+    apps: "crm, frappe_crm, frappe_chatwoot"
     resources:
       requests:
-        memory: "512Mi"
-        cpu: "500m"
+        memory: "128Mi"
+        cpu: "50m"
       limits:
-        memory: "1Gi"
-        cpu: "1000m"
+        memory: "512Mi"
+        cpu: "200m"
 
   # Schema migration for updates
   migrate:
     enabled: true
-    siteName: "crm.pennyjaar.com"
     resources:
       requests:
-        memory: "512Mi"
-        cpu: "500m"
+        memory: "128Mi"
+        cpu: "50m"
       limits:
-        memory: "1Gi"
-        cpu: "1000m"
+        memory: "512Mi"
+        cpu: "200m"
 
 # 8. Ingress (Optional - if using GKE Ingress Controller)
 ingress:

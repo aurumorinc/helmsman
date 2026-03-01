@@ -47,3 +47,115 @@ data:
     
     echo "Backup process completed."
     ls -R "/home/frappe/frappe-bench/backups/$FREQUENCY"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: migrate-script
+data:
+  migrate.sh: |
+    #!/bin/bash
+    set -e
+    echo "Starting Migration Job..."
+    cd /home/frappe/frappe-bench
+    bench --site all migrate
+    echo "Migration Completed."
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flush-script
+data:
+  flush.sh: |
+    #!/bin/bash
+    set -e
+    echo "Starting Cache Flush Job..."
+    cd /home/frappe/frappe-bench
+    bench --site all clear-cache
+    bench --site all clear-website-cache
+    echo "Cache Flush Completed."
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scheduler-script
+  namespace: crm
+data:
+  scheduler.sh: |
+    #!/bin/bash
+    set -e
+    echo "Starting Scheduler Enable Job..."
+    cd /home/frappe/frappe-bench
+    bench --site all scheduler enable
+    echo "Scheduler Enabled."
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sites-config
+  namespace: crm
+data:
+  SITES: "crm1.pennyjaar.com,crm2.pennyjaar.com"
+  APPS: "crm,offsite_backups,frappe_whatsapp"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: create-sites-script
+  namespace: crm
+data:
+  create-sites.sh: |
+    #!/bin/bash
+    set -e
+    echo "Starting Create Sites Job..."
+    cd /home/frappe/frappe-bench
+    
+    # SITES environment variable should be a comma-separated list of site names
+    if [ -z "$SITES" ]; then
+      echo "No SITES environment variable defined."
+      exit 0
+    fi
+    
+    # Process APPS into bench arguments
+    INSTALL_APPS_ARGS=""
+    if [ -n "$APPS" ]; then
+      IFS=',' read -r -a app_array <<< "$APPS"
+      for app in "${app_array[@]}"; do
+        app=$(echo "$app" | xargs)
+        if [ -n "$app" ]; then
+          INSTALL_APPS_ARGS="$INSTALL_APPS_ARGS --install-app=$app"
+        fi
+      done
+    fi
+    
+    # Ensure setuptools is installed
+    /home/frappe/frappe-bench/env/bin/pip install setuptools > /dev/null 2>&1 || true
+    
+    IFS=',' read -r -a site_array <<< "$SITES"
+    for site in "${site_array[@]}"; do
+      site=$(echo "$site" | xargs)
+      if [ -z "$site" ]; then continue; fi
+      
+      echo "Creating site: $site with apps: $APPS"
+      bench_output=$(bench new-site "$site" \
+        --no-mariadb-socket \
+        --db-type=mariadb \
+        --db-host=$DB_HOST \
+        --db-port=$DB_PORT \
+        --admin-password=$ADMIN_PASSWORD \
+        --mariadb-root-username=$DB_ROOT_USER \
+        --mariadb-root-password=$DB_ROOT_PASSWORD \
+        $INSTALL_APPS_ARGS \
+        --force 2>&1) || true
+        
+      echo "$bench_output"
+      
+      # Enable scheduler for the new site
+      bench --site "$site" enable-scheduler || true
+    done
+    echo "Create Sites Completed."

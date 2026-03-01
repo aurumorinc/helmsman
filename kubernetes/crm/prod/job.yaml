@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: flush-redis
+  namespace: crm
+  labels:
+    app.kubernetes.io/name: crm
+    app.kubernetes.io/component: flush
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 2
+  template:
+    spec:
+      containers:
+      - name: redis-flush
+        image: redis:alpine
+        command: ["redis-cli", "-h", "cache.valkey.crm.asia-south1.prod.aurumor.com", "-p", "6379", "flushall"]
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      restartPolicy: Never
