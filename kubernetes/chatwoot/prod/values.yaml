@@ -35,7 +35,7 @@ env:
   GOOGLE_OAUTH_CALLBACK_URL: "https://chatwoot.aurumor.com/google/callback"
 
   # SMTP Configuration
-  MAILER_SENDER_EMAIL: "chatwoot@aurumor.com"
+  MAILER_SENDER_EMAIL: "Chatwoot from Aurumor <chatwoot@aurumor.com>"
   SMTP_ADDRESS: "stalwart.aurumor.com"
   SMTP_PORT: 587
   SMTP_AUTHENTICATION: "plain"
@@ -43,8 +43,12 @@ env:
   SMTP_OPENSSL_VERIFY_MODE: "none"
   SMTP_USERNAME: "chatwootxaurumor"
   # SMTP_PASSWORD is fetched from the 'password' ExternalSecret
+
+  # Imap Configuration
+  IMAP_EMAIL_READ_LENGTH: 7
+
+  # Disable Account Signup
   ENABLE_ACCOUNT_SIGNUP: false
-  IMAP_CONTACTS_ONLY_EMAILS: "aquiveal@aurumor.com, aryan.singh@aurumor.com, abhishek.pushkar@aurumor.com, anandita@pennyjaar.com, nyamat.cheema@pennyjaar.com"
   
 # 4. Ingress / Load Balancing
 service:
@@ -56,7 +60,7 @@ service:
 # 6. Image Configuration
 image:
   repository: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/chatwoot
-  tag: develop.rc2
+  tag: v4.11.1-rc.1
   pullPolicy: IfNotPresent
 
 # 7. Service Account

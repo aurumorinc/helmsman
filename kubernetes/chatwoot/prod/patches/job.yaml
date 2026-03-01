@@ -3,6 +3,7 @@ kind: Job
 metadata:
   name: chatwoot-migrate
 spec:
+  ttlSecondsAfterFinished: 300
   template:
     spec:
       containers:
