@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: audiobookshelf-config
+  namespace: n8n
+spec:
+  capacity:
+    storage: 1Ti # Update this to match your Filestore size
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: regional
+  nfs:
+    path: /share/audiobookshelf/config # Replace with your Filestore share name (e.g., /vol1)
+    server: filestore.audiobookshelf.asia-south1.prod.aurumor.com      # Replace with your Filestore IP address
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: audiobookshelf-metadata
+  namespace: n8n
+spec:
+  capacity:
+    storage: 1Ti # Update this to match your Filestore size
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: regional
+  nfs:
+    path: /share/audiobookshelf/metadata # Replace with your Filestore share name (e.g., /vol1)
+    server: filestore.audiobookshelf.asia-south1.prod.aurumor.com      # Replace with your Filestore IP address
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: audiobookshelf-library
+  namespace: n8n
+spec:
+  capacity:
+    storage: 1Ti # Update this to match your Filestore size
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: regional
+  nfs:
+    path: /share/resources # Replace with your Filestore share name (e.g., /vol1)
+    server: filestore.audiobookshelf.asia-south1.prod.aurumor.com      # Replace with your Filestore IP address
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: audiobookshelf-backup
+spec:
+  capacity:
+    storage: 1Ti
+  accessModes:
+  - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: archive
+  mountOptions:
+    - implicit-dirs
+    - file-cache:enable-parallel-downloads:true
+    - file-cache:max-size-mb:-1
+  csi:
+    driver: gcsfuse.csi.storage.gke.io
+    volumeHandle: backups-asia-bucket-8u4pb0

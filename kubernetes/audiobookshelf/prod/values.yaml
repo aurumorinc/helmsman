@@ -1,0 +1,70 @@
+podAnnotations:
+  gke-gcsfuse/volumes: "true"
+
+# Replica count must remain 1 for SQLite
+replicaCount: 1
+
+autoscaling:
+  enabled: false
+
+audiobookshelf:
+  nodeEnv: "production"
+  timezone: "Asia/Kolkata"
+  source: "Helm"
+  sqlite:
+    mmapSize: "256000000"
+    cacheSize: "-6400"
+    tempStore: "2"
+
+  # Configuration directory storage
+  config:
+    persistence:
+      enabled: true
+      existingClaim: "config"
+  
+  # Metadata directory storage
+  metadata:
+    persistence:
+      enabled: true
+      existingClaim: "metadata"
+
+  # Library files (Audiobooks/Podcasts) storage
+  library:
+    persistence:
+      enabled: true
+      existingClaim: "library"
+
+  # Backups directory storage
+  backup:
+    persistence:
+      enabled: true
+      existingClaim: "backup"
+
+# GKE Autopilot Compatibility settings
+# These are usually default in the chart, but explicitly good for Autopilot
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  runAsNonRoot: true
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
+
+# Define resources (Required for GKE Autopilot)
+resources: 
+  requests: 
+    cpu: 250m
+    memory: 250Mi
+
+service: 
+  type: ClusterIP
+  port: 8080
+  annotations:
+      cloud.google.com/neg: '{"exposed_ports": {"8080":{}}}'
+
+fullnameOverride: "audiobookshelf"
+
+serviceAccount: 
+  create: false
+  name: "storage-folder-admin"
