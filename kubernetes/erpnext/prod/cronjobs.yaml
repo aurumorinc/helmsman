@@ -1,0 +1,140 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: erpnext-backup-hourly
+  namespace: erpnext
+spec:
+  schedule: "0 * * * *" # Every hour
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            gke-gcsfuse/volumes: "true"
+        spec:
+          serviceAccountName: storage-folder-admin
+          containers:
+          - name: backup
+            image: "asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/frappe:v16.3.0-rc14"
+            resources:
+              requests:
+                cpu: "500m"
+                memory: "1Gi"
+                ephemeral-storage: "1Gi"
+            command: ["/bin/bash", "/home/frappe/frappe-bench/scripts/backup.sh", "hourly"]
+            volumeMounts:
+              - name: sites-dir
+                mountPath: /home/frappe/frappe-bench/sites
+              - name: backups-dir
+                mountPath: /home/frappe/frappe-bench/backups
+              - name: script-dir
+                mountPath: /home/frappe/frappe-bench/scripts
+          restartPolicy: OnFailure
+          volumes:
+            - name: sites-dir
+              persistentVolumeClaim:
+                claimName: sites
+            - name: backups-dir
+              persistentVolumeClaim:
+                claimName: backup
+            - name: script-dir
+              configMap:
+                name: backup-script
+                defaultMode: 0755
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: erpnext-backup-daily
+  namespace: erpnext
+spec:
+  schedule: "0 3 * * *" # Daily at 3 AM
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            gke-gcsfuse/volumes: "true"
+        spec:
+          serviceAccountName: storage-folder-admin
+          containers:
+          - name: backup
+            image: "asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/frappe:v16.3.0-rc14"
+            resources:
+              requests:
+                cpu: "500m"
+                memory: "1Gi"
+                ephemeral-storage: "1Gi"
+            command: ["/bin/bash", "/home/frappe/frappe-bench/scripts/backup.sh", "daily"]
+            volumeMounts:
+              - name: sites-dir
+                mountPath: /home/frappe/frappe-bench/sites
+              - name: backups-dir
+                mountPath: /home/frappe/frappe-bench/backups
+              - name: script-dir
+                mountPath: /home/frappe/frappe-bench/scripts
+          restartPolicy: OnFailure
+          volumes:
+            - name: sites-dir
+              persistentVolumeClaim:
+                claimName: sites
+            - name: backups-dir
+              persistentVolumeClaim:
+                claimName: backup
+            - name: script-dir
+              configMap:
+                name: backup-script
+                defaultMode: 0755
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: erpnext-backup-monthly
+  namespace: erpnext
+spec:
+  schedule: "0 3 1 * *" # 1st of month at 3 AM
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            gke-gcsfuse/volumes: "true"
+        spec:
+          serviceAccountName: storage-folder-admin
+          containers:
+          - name: backup
+            image: "asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/frappe:v16.3.0-rc14"
+            resources:
+              requests:
+                cpu: "500m"
+                memory: "1Gi"
+                ephemeral-storage: "1Gi"
+            command: ["/bin/bash", "/home/frappe/frappe-bench/scripts/backup.sh", "monthly"]
+            volumeMounts:
+              - name: sites-dir
+                mountPath: /home/frappe/frappe-bench/sites
+              - name: backups-dir
+                mountPath: /home/frappe/frappe-bench/backups
+              - name: script-dir
+                mountPath: /home/frappe/frappe-bench/scripts
+          restartPolicy: OnFailure
+          volumes:
+            - name: sites-dir
+              persistentVolumeClaim:
+                claimName: sites
+            - name: backups-dir
+              persistentVolumeClaim:
+                claimName: backup
+            - name: script-dir
+              configMap:
+                name: backup-script
+                defaultMode: 0755

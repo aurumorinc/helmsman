@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Sets the namespace for all resources (except cluster-wide ones like PVs)
+namespace: portainer
+
+# 1. Include all your infrastructure and database manifests
+resources:
+  - namespace.yaml
+  - persistent-volume.yaml
+  - persistent-volume-claim.yaml
+
+# 2. Integrate the crm Helm Chart
+helmCharts:
+  - name: portainer
+    repo: https://portainer.github.io/k8s/
+    releaseName: portainer
+    version: 2.39.0
+    valuesFile: values.yaml
+    includeCRDs: true

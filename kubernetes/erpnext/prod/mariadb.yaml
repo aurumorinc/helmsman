@@ -1,0 +1,52 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: MariaDB
+metadata:
+  name: mariadb
+  namespace: erpnext
+  labels:
+    app: erpnext
+spec:
+  replicas: 2
+
+  maxScaleRef:
+    name: maxscale
+
+  timeZone: "Asia/Kolkata"
+
+  replication:
+    enabled: true
+    primary:
+      autoFailover: false 
+    replica:
+      syncTimeout: 10s
+      maxLagSeconds: 10 
+
+  resources:
+    requests:
+      cpu: 2000m
+      memory: 4Gi
+    limits:
+      memory: 4Gi
+
+  myCnf: |
+    [mysqld]
+    innodb_buffer_pool_size=3G
+    innodb_log_file_size=512M
+    max_connections=400
+    character-set-server=utf8mb4
+    collation-server=utf8mb4_unicode_ci
+
+  storage:
+    size: 80Gi
+    storageClassName: premium-rwo
+    resizeInUseVolumes: true
+
+  rootPasswordSecretKeyRef:
+    name: password
+    key: root-password
+
+  service:
+    type: ClusterIP
+
+  metrics:
+    enabled: true

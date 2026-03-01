@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: convoy-server
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: wait-for-migrate
+          env:
+            - name: CONVOY_DB_PASSWORD
+              value: null
+              valueFrom:
+                secretKeyRef:
+                  name: password
+                  key: convoy-db-password
+      containers:
+        - name: server
+          env:
+            - name: CONVOY_DB_PASSWORD
+              value: null
+              valueFrom:
+                secretKeyRef:
+                  name: password
+                  key: convoy-db-password
+            - name: CONVOY_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: license-key
+                  key: convoy-license-key
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: convoy-agent
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: wait-for-migrate
+          env:
+            - name: CONVOY_DB_PASSWORD
+              value: null
+              valueFrom:
+                secretKeyRef:
+                  name: password
+                  key: convoy-db-password
+      containers:
+        - name: agent
+          env:
+            - name: CONVOY_DB_PASSWORD
+              value: null
+              valueFrom:
+                secretKeyRef:
+                  name: password
+                  key: convoy-db-password
+            - name: CONVOY_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: license-key
+                  key: convoy-license-key

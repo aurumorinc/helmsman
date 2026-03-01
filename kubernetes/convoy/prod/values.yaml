@@ -1,0 +1,73 @@
+global:
+  convoy:
+    # -- Docker image tags for all convoy components
+    image: "asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/convoy"
+    tag: "v26.1.4-rc.2"
+    log_level: "error"
+    environment: "onprem"
+    tracer_enabled: false
+    retention_policy_enabled: false
+    enable_usage_analytics: true
+    api_version: "2024-01-01"
+    # Use empty secret name here to avoid chart error looking for 'license_key' key.
+    # We inject the correct env var via patch.
+    license_key_secret_name: ""
+
+  externalDatabase:
+    enabled: true
+    host: "cloud-sql-proxy.convoy.svc.cluster.local"
+    # We provide a placeholder password here. The actual password is injected
+    # via the deployment patch from the existing secret.
+    postgresPassword: "placeholder"
+    database: "convoy"
+    username: "convoy"
+    port: 5432
+    # Do not set secret here to avoid chart error looking for 'password' key.
+
+  nativeRedis:
+    enabled: false
+
+  externalRedis:
+    enabled: true
+    host: "valkey.convoy.asia-south1.prod.aurumor.com"
+    port: 6379
+    password: ""
+    scheme: "redis"
+
+server:
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 80
+  app:
+    replicaCount: 2
+  image:
+    repository: "asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/convoy"
+    tag: "v26.1.1-rc.1"
+  env:
+    environment: "onprem"
+  service:
+    type: ClusterIP
+    annotations:
+      cloud.google.com/neg: '{"exposed_ports": {"80":{}}}'
+
+agent:
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 80
+  app:
+    replicaCount: 2
+  image:
+    repository: "asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/convoy"
+    tag: "v26.1.4-rc.2"
+  env:
+    environment: "onprem"
+
+postgresql:
+  enabled: false
+
+redis:
+  enabled: false

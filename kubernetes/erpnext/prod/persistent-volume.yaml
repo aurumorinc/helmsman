@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: erpnext-sites
+  namespace: erpnext
+spec:
+  capacity:
+    storage: 1Ti # Update this to match your Filestore size
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: regional
+  nfs:
+    path: /share/erpnext/sites
+    server: filestore.erpnext.asia-south1.prod.aurumor.com
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: erpnext-backup
+  namespace: erpnext
+spec:
+  capacity:
+    storage: 1Ti # Virtual size
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: archive
+  mountOptions:
+    - implicit-dirs
+    - uid=1000
+    - gid=1000
+  csi:
+    driver: gcsfuse.csi.storage.gke.io
+    volumeHandle: erpnext-backups-asia-bucket-8ngeal

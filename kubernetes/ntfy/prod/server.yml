@@ -1,0 +1,29 @@
+# base-url is the external URL of the server. This is used for attachment downloads and
+# for the "View" button in notifications.
+base-url: "https://ntfy.aurumor.com"
+
+# behind-proxy must be set to true if you are running ntfy behind a reverse proxy
+# (like nginx, caddy, traefik, or an ingress controller).
+behind-proxy: true
+
+# cache-file is the database file where messages are stored.
+cache-file: "/var/cache/ntfy/cache.db"
+
+# attachment-cache-dir is the directory where attachments are stored.
+attachment-cache-dir: "/var/cache/ntfy/attachments"
+
+# auth-file is the database file where users and access control lists are stored.
+auth-file: "/var/lib/ntfy/user.db"
+
+# auth-default-access determines the default access level for users.
+auth-default-access: "deny-all"
+
+auth-users:
+  - "crmxpennyjaar:$2a$12$LtWW2bZipADcW4s8XDqPyuKAUzKbmAFZwv.p5VfDRMaNuWYFuRTJS:user"
+  - "crmxcapybaara:$2a$12$QEdMddr5oIuYlIa0WMEx1eY5tFVZy9HrRLYKHBGMCL2DN7nhAKn.y:user"
+
+auth-access:
+  - "crmxpennyjaar:crmxpennyjaar:rw"
+  - "crmxcapybaara:crmxcapybaara:rw"
+  - "*:crmxpennyjaar:ro"
+  - "*:crmxcapybaara:ro"
