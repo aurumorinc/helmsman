@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Sets the namespace for all resources (except cluster-wide ones like PVs)
+namespace: audiobookshelf
+# 1. Include all your infrastructure and database manifests
+resources:
+- namespace.yaml
+- service-account.yaml
+- persistent-volume.yaml
+- persistent-volume-claim.yaml
+# 2. Integrate the Audiobookshelf Helm Chart
+helmCharts:
+- includeCRDs: true
+  name: audiobookshelf
+  namespace: audiobookshelf
+  releaseName: audiobookshelf
+  repo: https://charts.christianhuth.de
+  valuesFile: values.yaml
+  version: 1.2.0
+
+patches:
+- path: patches/deployment.yaml
+- path: patches/service.yaml
+
+labels:
+- includeSelectors: true
+  pairs:
+    app: audiobookshelf
