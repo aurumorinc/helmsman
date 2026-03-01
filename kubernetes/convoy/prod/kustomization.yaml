@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Sets the namespace for all resources
+namespace: convoy
+
+# 1. Include all your infrastructure and database manifests
+resources:
+  - namespace.yaml
+  - service-account.yaml
+  - secret-store.yaml
+  - external-secret.yaml
+  - deployment.yaml
+  - service.yaml
+
+# 2. Integrate the Convoy Helm Chart
+helmCharts:
+  - name: convoy
+    repo: https://frain-dev.github.io/helm-charts
+    version: 3.6.2
+    releaseName: convoy
+    namespace: convoy
+    valuesFile: values.yaml
+
+patches:
+  - path: patches/deployment.yaml
+  - path: patches/service.yaml

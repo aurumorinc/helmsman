@@ -1,0 +1,18 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Grant
+metadata:
+  name: erpnext
+  namespace: erpnext
+spec:
+  mariaDbRef:
+    name: mariadb
+  username: erpnext
+  # Granting ALL PRIVILEGES makes this an administrative user
+  privileges:
+    - "ALL PRIVILEGES"
+  database: "*"
+  table: "*"
+  # Must match the host defined in the User CR
+  host: "%"
+  # Allows this user to grant permissions to others (typical for root)
+  grantOption: true

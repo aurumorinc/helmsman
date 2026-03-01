@@ -1,6 +1,0 @@
-apiVersion: v2
-name: waha
-description: A Helm chart for deploying Waha (WhatsApp HTTP API) with multi-user support via Nginx gateway.
-type: application
-version: 0.1.0
-appVersion: "latest"

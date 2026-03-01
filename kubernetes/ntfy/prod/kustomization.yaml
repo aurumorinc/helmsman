@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Sets the namespace for all resources (except cluster-wide ones like PVs)
+namespace: ntfy
+
+# 1. Include all your infrastructure and database manifests
+resources:
+  - namespace.yaml
+  - persistent-volume.yaml
+  - persistent-volume-claim.yaml
+  - deployment.yaml
+  - service.yaml
+
+configMapGenerator:
+  - name: server
+    files:
+      - server.yml
+
+images:
+  - name: binwiederhier/ntfy
+    newTag: v2.17

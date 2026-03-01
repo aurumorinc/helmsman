@@ -1,0 +1,16 @@
+enterpriseEdition:
+  enabled: true
+  image:
+    tag: lts
+
+service:
+  type: ClusterIP
+  annotations:
+    cloud.google.com/neg: '{"exposed_ports": {"9443":{}}}'
+
+tls:
+  force: true
+
+persistence:
+  enabled: true
+  existingClaim: data
