@@ -91,11 +91,10 @@ nginx:
     periodSeconds: 240
   resources:
     requests:
-      memory: "256Mi"
-      cpu: "100m"
+      memory: "64Mi"
+      cpu: "50m"
     limits:
-      memory: "512Mi"
-      cpu: "500m"
+      memory: "64Mi"
   service:
     type: ClusterIP
     port: 8080
@@ -122,22 +121,20 @@ worker:
             subPath: assets
         resources:
           requests:
-            memory: "128Mi"
+            memory: "64Mi"
             cpu: "50m"
           limits:
-            memory: "256Mi"
-            cpu: "250m"
+            memory: "64Mi"
     autoscaling:
       enabled: true
       minReplicas: 2
       targetCPU: 80
     resources:
       requests:
-        memory: "1Gi"
-        cpu: "500m"
+        memory: "512Mi"
+        cpu: "50m"
       limits:
-        memory: "2Gi"
-        cpu: "1000m"
+        memory: "512Mi"
     livenessProbe:
       tcpSocket: null
       httpGet:
@@ -164,47 +161,42 @@ worker:
   default:
     resources:
       requests:
-        memory: "1Gi"
+        memory: "256Mi"
         cpu: "250m"
       limits:
-        memory: "2Gi"
-        cpu: "1000m"
+        memory: "256Mi"
 
   short:
     resources:
       requests:
-        memory: "1Gi"
+        memory: "256Mi"
         cpu: "250m"
       limits:
-        memory: "2Gi"
-        cpu: "1000m"
+        memory: "256Mi"
 
   long:
     resources:
       requests:
-        memory: "1Gi"
+        memory: "256Mi"
         cpu: "250m"
       limits:
-        memory: "2Gi"
-        cpu: "1000m"
+        memory: "256Mi"
 
   scheduler:
     resources:
       requests:
         memory: "128Mi"
-        cpu: "50m"
+        cpu: "100m"
       limits:
-        memory: "256Mi"
-        cpu: "250m"
+        memory: "128Mi"
 
 socketio:
   resources:
     requests:
-      memory: "256Mi"
-      cpu: "100m"
+      memory: "128Mi"
+      cpu: "50m"
     limits:
-      memory: "512Mi"
-      cpu: "500m"
+      memory: "128Mi"
 
 # 7. Job Configuration
 jobs:
@@ -217,8 +209,7 @@ jobs:
         memory: "128Mi"
         cpu: "100m"
       limits:
-        memory: "256Mi"
-        cpu: "500m"
+        memory: "128Mi"
 
   # Creates the site and installs apps
   createSite:
@@ -238,8 +229,7 @@ jobs:
         memory: "512Mi"
         cpu: "500m"
       limits:
-        memory: "1Gi"
-        cpu: "1000m"
+        memory: "512Mi"
 
   # Schema migration for updates
   migrate:
@@ -250,9 +240,8 @@ jobs:
         memory: "512Mi"
         cpu: "500m"
       limits:
-        memory: "1Gi"
-        cpu: "1000m"
-
+        memory: "512Mi"
+        
 # 8. Ingress (Optional - if using GKE Ingress Controller)
 ingress:
   enabled: false 

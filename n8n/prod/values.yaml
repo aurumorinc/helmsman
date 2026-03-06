@@ -10,16 +10,22 @@ redis:
 # 2. Image Configuration
 image:
   repository: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/n8n
-  tag: 1.122.4
+  tag: v2.9.4
   pullPolicy: IfNotPresent
 
 # 3. Main Instance Configuration
 main:
-  minReplicaCount: 1
+  replicaCount: 1
+  deploymentStrategy: &deploymentStrategy
+    type: RollingUpdate
+  autoscaling:
+    enabled: false
   resources: &resources
     requests:
-      cpu: 1000m
-      memory: 1000Mi
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 512Mi
 
   persistence: &persistence
     enabled: true
@@ -50,15 +56,14 @@ main:
 
     # --- Queue (Memorystore) ---
     EXECUTIONS_MODE: "queue"
-    QUEUE_BULL_REDIS_HOST: "redis.n8n.asia-south1.prod.capybaara.com"
+    QUEUE_BULL_REDIS_HOST: "valkey.n8n.asia-south1.prod.capybaara.com"
     QUEUE_HEALTH_CHECK_ACTIVE: "true"
 
     # --- Licensing ---
-    N8N_LICENSE_SERVER_URL: "https://ee.aurumor.com"
+    N8N_LICENSE_SERVER_URL: "https://n8n-enterprise-service-983739882706.asia-south1.run.app"
     N8N_LICENSE_TENANT_ID: "1"
 
     # --- Features ---
-    N8N_RUNNERS_ENABLED: "false"
     OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS: "true"
     N8N_DIAGNOSTICS_ENABLED: "true"
     
@@ -66,7 +71,6 @@ main:
     N8N_DISABLE_PRODUCTION_MAIN_PROCESS: "true"
 
     # --- Binary Data ---
-    N8N_AVAILABLE_BINARY_DATA_MODES: "filesystem,s3"
     N8N_DEFAULT_BINARY_DATA_MODE: "s3"
     N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME: "binary-data-asia-south1-bucket-h1l0er"
     N8N_EXTERNAL_STORAGE_S3_BUCKET_REGION: "asia-south1"
@@ -74,6 +78,15 @@ main:
     WEBHOOK_URL: "https://n8n.capybaara.com"
 
   extraEnv: &extraEnv
+    N8N_RUNNERS_MODE:
+      value: "external"
+    N8N_RUNNERS_BROKER_LISTEN_ADDRESS:
+      value: "0.0.0.0"
+    N8N_RUNNERS_AUTH_TOKEN:
+      valueFrom:
+        secretKeyRef:
+          name: auth-token
+          key: n8n-runners-auth-token
     DB_POSTGRESDB_PASSWORD:
       valueFrom:
         secretKeyRef:
@@ -111,7 +124,7 @@ main:
 
   readinessProbe: &readinessProbe
     httpGet:
-      path: /healthz
+      path: /healthz/readiness
       port: 5678
     initialDelaySeconds: 30
     periodSeconds: 10
@@ -121,14 +134,13 @@ main:
 # 5. Worker Configuration
 worker:
   enabled: true
+  deploymentStrategy: *deploymentStrategy
   autoscaling: 
     enabled: false
   concurrency: 10
   resources: *resources
   persistence: *persistence
   extraEnv: *extraEnv
-  livenessProbe: *livenessProbe
-  readinessProbe: *readinessProbe
 
 webhook:
   enabled: false

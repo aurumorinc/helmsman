@@ -1,0 +1,9 @@
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: windmill
+spec:
+  secretTargetRef:
+    - parameter: connection
+      name: database
+      key: database-url

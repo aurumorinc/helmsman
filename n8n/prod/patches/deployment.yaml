@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n-worker
+  namespace: n8n
+spec:
+  template:
+    spec:
+      containers:
+      
+      - name: n8n-worker
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 5678
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 240
+          failureThreshold: 10
+        readinessProbe:
+          httpGet:
+            path: /healthz/readiness
+            port: 5678
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 240
+          failureThreshold: 5
+
+      - name: task-runners
+        image: n8nio/runners:2.9.4
+        env:
+          - name: N8N_RUNNERS_TASK_BROKER_URI
+            value: "http://localhost:5679"
+          - name: N8N_RUNNERS_AUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: auth-token
+                key: n8n-runners-auth-token

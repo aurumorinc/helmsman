@@ -60,7 +60,7 @@ service:
 # 6. Image Configuration
 image:
   repository: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/chatwoot
-  tag: v4.11.1-rc.1
+  tag: v4.11.1-rc.2
   pullPolicy: IfNotPresent
 
 # 7. Service Account
@@ -72,8 +72,8 @@ serviceAccount:
 web:
   resources:
     requests:
-      cpu: 500m
-      memory: 1Gi
+      cpu: 100m
+      memory: 768Mi
     limits:
       cpu: 1
       memory: 2Gi
@@ -81,8 +81,8 @@ web:
 worker:
   resources:
     requests:
-      cpu: 500m
-      memory: 1Gi
+      cpu: 150m
+      memory: 896Mi
     limits:
       cpu: 1
       memory: 2Gi

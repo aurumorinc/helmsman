@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: flush-redis
+  name: crm-flush-redis
   namespace: crm
   labels:
     app.kubernetes.io/name: crm

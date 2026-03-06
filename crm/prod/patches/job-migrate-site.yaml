@@ -10,12 +10,11 @@ spec:
         command: ["bash", "-c"]
         args:
           - >
-            set -x;
-            
-            # We migrate all sites instead of just $SITE_NAME
-            bench --site all set-maintenance-mode on;
-            bench --site all migrate --skip-failing;
-            bench --site all clear-cache;
-            bench --site all clear-website-cache;
-            bench --site all scheduler enable;
-            bench --site all set-maintenance-mode off;
+            ls -1 sites | grep -vE "^(assets|apps.txt|common_site_config.json)$" | while read -r site; do
+              bench --site "$site" set-maintenance-mode on;
+              bench --site "$site" migrate --skip-failing;
+              bench --site "$site" clear-cache;
+              bench --site "$site" clear-website-cache;
+              bench --site "$site" scheduler enable;
+              bench --site "$site" set-maintenance-mode off;
+            done

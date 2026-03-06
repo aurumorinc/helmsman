@@ -54,7 +54,7 @@ securityContext:
 # Define resources (Required for GKE Autopilot)
 resources: 
   requests: 
-    cpu: 250m
+    cpu: 50m
     memory: 250Mi
 
 service: 

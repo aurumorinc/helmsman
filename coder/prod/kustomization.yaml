@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Sets the namespace for all resources
+namespace: coder
+
+# 1. Include all your infrastructure and database manifests
+resources:
+  - namespace.yaml
+  - service-account.yaml
+  - secret-store.yaml
+  - external-secret.yaml
+  - deployment.yaml
+  - service.yaml
+
+# 2. Integrate the chatwoot Helm Chart
+helmCharts:
+  - name: coder
+    repo: https://helm.coder.com/v2
+    releaseName: coder
+    namespace: coder
+    version: 2.31.2
+    valuesFile: values.yaml
+    includeCRDs: true
