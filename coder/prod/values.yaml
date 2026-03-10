@@ -1,4 +1,8 @@
 coder:
+  serviceAccount:
+    name: compute-service-account
+    disableCreate: true
+
   env:
     - name: CODER_PG_CONNECTION_URL
       valueFrom:
@@ -16,4 +20,3 @@ coder:
     type: ClusterIP
     annotations:
       cloud.google.com/neg: '{"exposed_ports": {"80":{}}}'
-
