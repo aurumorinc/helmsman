@@ -1,0 +1,22 @@
+coder:
+  serviceAccount:
+    name: compute-service-account
+    disableCreate: true
+
+  env:
+    - name: CODER_PG_CONNECTION_URL
+      valueFrom:
+        secretKeyRef:
+          name: database
+          key: coder-pg-connection-url
+    - name: CODER_ACCESS_URL
+      value: "https://coder.aurumor.com"
+      
+  image:
+    repo: "asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/coder"
+    tag: "v2.30.3"
+
+  service:
+    type: ClusterIP
+    annotations:
+      cloud.google.com/neg: '{"exposed_ports": {"80":{}}}'

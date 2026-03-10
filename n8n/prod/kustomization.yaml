@@ -15,6 +15,9 @@ resources:
   - service.yaml
   - scaled-object.yaml
 
+patches:
+  - path: patches/deployment.yaml
+
 helmCharts:
   - includeCRDs: true
     name: n8n

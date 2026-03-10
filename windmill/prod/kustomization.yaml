@@ -1,0 +1,34 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Sets the namespace for all resources
+namespace: windmill
+
+# 1. Include all your infrastructure and database manifests
+resources:
+  - namespace.yaml
+  - service-account.yaml
+  - secret-store.yaml
+  - external-secret.yaml
+  - deployment.yaml
+  - service.yaml
+  - scaled-object.yaml
+  - trigger-authentication.yaml
+
+# 2. Integrate the chatwoot Helm Chart
+helmCharts:
+  - name: windmill
+    repo: https://windmill-labs.github.io/windmill-helm-charts/
+    releaseName: windmill
+    namespace: windmill
+    version: 4.0.91
+    valuesFile: values.yaml
+    includeCRDs: true
+
+patches:
+  - path: patches/deployment.yaml
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: windmill-workers-browser

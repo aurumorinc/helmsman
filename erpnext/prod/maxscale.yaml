@@ -34,3 +34,10 @@ spec:
     params:
       auto_failover: "true"
       auto_rejoin: "true"
+  
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 256Mi

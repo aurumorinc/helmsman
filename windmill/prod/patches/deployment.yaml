@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: windmill-workers-browser
+  namespace: windmill
+spec:
+  template:
+    spec:
+      containers:
+      - name: windmill-worker
+        image: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/windmill-browser:v1.651.1-rc.15
