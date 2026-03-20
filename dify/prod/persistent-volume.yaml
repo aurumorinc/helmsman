@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dify-minio-data
+spec:
+  capacity:
+    storage: 1Ti
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: regional
+  nfs:
+    path: /share/dify/minio-data
+    server: filestore.dify.asia-south1.prod.aurumor.com

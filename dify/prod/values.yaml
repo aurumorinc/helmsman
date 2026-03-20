@@ -1,0 +1,335 @@
+# dify/prod/values.yaml
+
+global:
+  edition: "SELF_HOSTED"
+  useTLS: true
+  appSecretKey: "#REPLACE_ME#"
+  consoleApiDomain: "dify.aurumor.com"
+  consoleWebDomain: "dify.aurumor.com"
+  serviceApiDomain: "dify-api.aurumor.com"
+  appApiDomain: "dify-app.aurumor.com"
+  appWebDomain: "dify-app.aurumor.com"
+  filesDomain: "dify-files.aurumor.com"
+  enterpriseDomain: "dify-enterprise.aurumor.com"
+  triggerDomain: "dify-trigger.aurumor.com"
+
+# Postgres Configuration (via cloud-sql-proxy)
+externalDatabase:
+  enabled: true
+  engine: "postgres"
+  host: "cloud-sql-proxy.dify.svc.cluster.local"
+  port: 5432
+  user: "dify"
+  password: "#REPLACE_ME#"
+  databases:
+    dify: "dify"
+    plugin_daemon: "dify_plugin_daemon"
+    enterprise: "enterprise"
+    audit: "audit"
+  dialectOptions:
+    postgres:
+      sslMode: "disable"
+
+postgresql:
+  enabled: false
+
+# Valkey Redis Configuration
+externalRedis:
+  enabled: true
+  host: "valkey.dify.asia-south1.prod.aurumor.com"
+  port: 6379
+  password: ""
+  db: 0
+  
+redis:
+  enabled: false
+
+# Storage Configuration (Minio with existing PVC)
+persistence:
+  type: "s3"
+  s3:
+    endpoint: "http://dify-minio.dify:9000"
+    accessKey: "minioadmin"
+    secretKey: "NzGG+ngHuwz0xzMQ1XFt8JYCAxdrhnQ8/93LCggMt00="
+    region: "us-east-1"
+    bucketName: "dify"
+    useAwsS3: false
+
+minio:
+  enabled: true
+  replicas: 1
+  auth:
+    rootUser: "minioadmin"
+    rootPassword: "NzGG+ngHuwz0xzMQ1XFt8JYCAxdrhnQ8/93LCggMt00="
+  persistence:
+    enabled: true
+    existingClaim: "minio-data"
+
+# Vector DB Configuration (pgvector on the same Cloud SQL)
+vectorDB:
+  useExternal: true
+  externalType: "pgvector"
+
+qdrant:
+  enabled: false
+
+# Mail Configuration
+mail:
+  type: "smtp"
+  defaultSender: "dify@aurumor.com"
+  smtp:
+    server: "stalwart.aurumor.com"
+    port: 587
+    username: "difyxcapybaara"
+    password: "#REPLACE_ME#"
+    useTLS: false
+
+ssrfProxy:
+  squidConf: |
+    acl localnet src 0.0.0.1-0.255.255.255
+    acl localnet src 10.0.0.0/8
+    acl localnet src 100.64.0.0/10
+    acl localnet src 169.254.0.0/16
+    acl localnet src 172.16.0.0/12
+    acl localnet src 192.168.0.0/16
+    acl localnet src 240.0.0.0/4
+    acl localnet src fc00::/7
+    acl localnet src fe80::/10
+    acl private_dst dst 0.0.0.0/8
+    acl private_dst dst 10.0.0.0/8
+    acl private_dst dst 100.64.0.0/10
+    acl private_dst dst 127.0.0.0/8
+    acl private_dst dst 169.254.0.0/16
+    acl private_dst dst 172.16.0.0/12
+    acl private_dst dst 192.168.0.0/16
+    acl private_dst dst fc00::/7
+    acl private_dst dst fe80::/10
+    acl private_dst dst ::1/128
+    acl SSL_ports port 443
+    acl Safe_ports port 80
+    acl Safe_ports port 21
+    acl Safe_ports port 443
+    acl Safe_ports port 70
+    acl Safe_ports port 210
+    acl Safe_ports port 1025-65535
+    acl Safe_ports port 280
+    acl Safe_ports port 488
+    acl Safe_ports port 591
+    acl Safe_ports port 777
+    acl CONNECT method CONNECT
+    http_access deny !Safe_ports
+    http_access deny CONNECT !SSL_ports
+    http_access allow localhost manager
+    http_access deny manager
+    http_access allow localhost
+    http_access allow localnet
+    http_access deny private_dst
+    include /etc/squid/conf.d/*.conf
+    http_access deny all
+
+    ################################## Proxy Server ################################
+    http_port 3128
+    coredump_dir /var/spool/squid
+    refresh_pattern ^ftp:		1440	20%	10080
+    refresh_pattern ^gopher:	1440	0%	1440
+    refresh_pattern -i (/cgi-bin/|\?) 0	0%	0
+    refresh_pattern \/(Packages|Sources)(|\.bz2|\.gz|\.xz)$ 0 0% 0 refresh-ims
+    refresh_pattern \/Release(|\.gpg)$ 0 0% 0 refresh-ims
+    refresh_pattern \/InRelease$ 0 0% 0 refresh-ims
+    refresh_pattern \/(Translation-.*)(|\.bz2|\.gz|\.xz)$ 0 0% 0 refresh-ims
+    refresh_pattern .		0	20%	4320
+
+    ################################## Reverse Proxy To Sandbox ################################
+    http_port 8194 accel vhost
+    cache_peer dify-sandbox-svc parent 8194 0 no-query originserver
+    acl src_all src all
+    http_access allow src_all
+# This approach safely retrieves sensitive keys/passwords from ExternalSecrets
+api:
+  extraEnv:
+    - name: VECTOR_STORE
+      value: "pgvector"
+    - name: PGVECTOR_HOST
+      value: "cloud-sql-proxy.dify.svc.cluster.local"
+    - name: PGVECTOR_PORT
+      value: "5432"
+    - name: PGVECTOR_USER
+      value: "dify"
+    - name: PGVECTOR_DATABASE
+      value: "pgvectors"
+    - name: SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: key
+          key: secret-key
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: db-password
+    - name: PGVECTOR_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: db-password
+    - name: SMTP_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: smtp-password
+
+worker:
+  extraEnv:
+    - name: VECTOR_STORE
+      value: "pgvector"
+    - name: PGVECTOR_HOST
+      value: "cloud-sql-proxy.dify.svc.cluster.local"
+    - name: PGVECTOR_PORT
+      value: "5432"
+    - name: PGVECTOR_USER
+      value: "dify"
+    - name: PGVECTOR_DATABASE
+      value: "pgvectors"
+    - name: SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: key
+          key: secret-key
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: db-password
+    - name: PGVECTOR_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: db-password
+    - name: SMTP_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: smtp-password
+
+triggerWorker:
+  extraEnv:
+    - name: VECTOR_STORE
+      value: "pgvector"
+    - name: PGVECTOR_HOST
+      value: "cloud-sql-proxy.dify.svc.cluster.local"
+    - name: PGVECTOR_PORT
+      value: "5432"
+    - name: PGVECTOR_USER
+      value: "dify"
+    - name: PGVECTOR_DATABASE
+      value: "pgvectors"
+    - name: SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: key
+          key: secret-key
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: db-password
+    - name: PGVECTOR_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: db-password
+
+workerBeat:
+  extraEnv:
+    - name: SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: key
+          key: secret-key
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: db-password
+
+web:
+  extraEnv:
+    - name: SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: key
+          key: secret-key
+
+enterprise:
+  enabled: false
+
+enterpriseAudit:
+  enabled: false
+
+enterpriseCollector:
+  enabled: false
+
+enterpriseFrontend:
+  enabled: false
+
+plugin_daemon:
+  extraEnv:
+    - name: SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: key
+          key: secret-key
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: db-password
+    - name: DB_PASS
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: db-password
+
+plugin_manager:
+  enabled: true
+  extraEnv:
+    - name: SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: key
+          key: secret-key
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: db-password
+    - name: DB_PASS
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: db-password
+
+plugin_connector:
+  replicas: 1
+  imageRepoType: docker
+  imageRepoPrefix: "ghcr.io/aquiveal"
+  imageRepoSecret: "dify-image-repo-secret"
+  extraEnv:
+    - name: SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: key
+          key: secret-key
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: db-password
+    - name: DB_PASS
+      valueFrom:
+        secretKeyRef:
+          name: password
+          key: db-password
+
+plugin_controller:
+  replicas: 1
