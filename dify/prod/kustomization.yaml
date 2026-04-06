@@ -1,0 +1,38 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Sets the namespace for all resources
+namespace: dify
+
+# 1. Include all your infrastructure and database manifests
+resources:
+  - namespace.yaml
+  - persistent-volume.yaml
+  - persistent-volume-claim.yaml
+  - service-account.yaml
+  - secret-store.yaml
+  - external-secret.yaml
+  - deployment.yaml
+  - service.yaml
+  - secret.yaml
+
+# 2. Integrate the dify Helm Chart
+helmCharts:
+  - name: dify
+    repo: https://langgenius.github.io/dify-helm
+    releaseName: dify
+    namespace: dify
+    version: 3.8.0
+    valuesFile: values.yaml
+    includeCRDs: true
+
+# 3. Patches
+patches:
+  - path: patches/service.yaml
+    target:
+      kind: Service
+      name: dify-gateway-svc
+  - path: patches/plugin-connector-env.yaml
+    target:
+      kind: Deployment
+      name: dify-plugin-connector

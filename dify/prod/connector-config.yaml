@@ -1,0 +1,100 @@
+pluginScheduleInfo:
+  labels:
+  nodeSelector:
+  requests:
+    cpu: "100m"
+    memory: "50Mi"
+    ephemeralStorage: "5Gi"
+  limits:
+    cpu: "1000m"
+    memory: "3000Mi"
+    ephemeralStorage: "5Gi"
+namespace: "dify"
+customServiceAccount: ""
+runnerServiceAccount: ""
+server:
+  serverPort: 5004
+  apiKey: "UY8Qri0LOKpDO9eckiY8dvOgtJynMGaO6XikQ6J1Tjdsafon0OeBYrXW"
+  maxWaitSeconds: 3600
+data:
+  db_instance:
+    engine: ${DB_ENGINE:postgres}
+    host: ${DB_HOST:cloud-sql-proxy.dify.svc.cluster.local}
+    port: ${DB_PORT:5432}
+    user: ${DB_USER:dify}
+    password: ${DB_PASS}
+    timezone: ${DB_TZ:UTC}
+    dialect_options:
+      postgres:
+        ssl_mode: ${DB_SSL_MODE:disable}
+        uri_scheme: ${DB_URI_SCHEME:postgresql}
+        extras: ${DB_EXTRAS:""}
+      mysql:
+        params: ${DB_PARAMS:"charset=utf8mb4&parseTime=true&loc=UTC"}
+        tls: ${DB_TLS:false}
+  enterprise_db:
+    name: ${ENTERPRISE_DB_NAME:enterprise}
+  plugin_db:
+    name: ${PLUGIN_DB_NAME:dify_plugin_daemon}
+builder:
+  maxDockerContextSize: 52428800
+  builderName: "kaniko"
+  secret: ""
+  repoType: "docker"
+  insecureRepo: false
+  kaniko:
+    shaderImage: "gcr.io/kaniko-project/executor:latest"
+    imagePrefix: "asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/docker-standard-dify-artifact-registry/aquiveal"
+    ecr_region: "us-east-1"
+    use_aws_iam: false
+    awsCliImage: "amazon/aws-cli:latest"
+  github:
+    repoName: "your-repo-name"
+    actionFileName: "build.yml"
+    branch: "main"
+    imagePrefix: "asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/docker-standard-dify-artifact-registry/aquiveal"
+    orgName: "your-org-name"
+    shaderImage: "gcr.io/kaniko-project/executor:latest"
+    authMethod: "auto"
+    githubAccessToken: ""
+    app:
+      appId: "0"
+      installationId: "0"
+      privateKeyFile: "/app/github/app.pem"
+  httpProxy: ""
+storage:
+  remoteS3:
+    region: "us-east-1"
+    accessKey: ${S3_ACCESS_KEY}
+    secretKey: ${S3_SECRET_KEY}
+    endpoint:  "http://dify-minio.dify:9000"
+    bucket: "dify"
+    useAws: false
+    useIam: false
+  localS3:
+    region: "us-east-1"
+    accessKey: ${S3_ACCESS_KEY}
+    secretKey: ${S3_SECRET_KEY}
+    endpoint:  "http://dify-minio.dify:9000"
+    bucket: "dify"
+    useAws: false
+    useIam: false
+pluginDr:
+  enabled: false
+  reconcileInterval: "5s"
+  reconcileBatchSize: 100
+  fullReconcileInterval: "1800s"
+  gcInterval: "300s"
+  deadLetterThreshold: 5
+  softDeleteRetention: "86400s"
+runner:
+  gatewayImage: "nginx:1.29.4-alpine"
+  runnerName: k8s
+  pluginDaemonPublicUrl: http://dify-plugin-daemon-svc:5002
+  secret: ""
+  k8s:
+    useIngress: false
+    ingressConfig:
+      host: ""
+      protocol: ""
+      ingressClassName: ""
