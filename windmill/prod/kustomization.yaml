@@ -24,6 +24,11 @@ helmCharts:
     version: 4.0.91
     valuesFile: values.yaml
     includeCRDs: true
+  - name: moon2
+    repo: https://charts.aerokube.com/
+    releaseName: moon
+    namespace: windmill
+    includeCRDs: true
 
 patches:
   - path: patches/deployment.yaml

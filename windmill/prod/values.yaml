@@ -32,12 +32,12 @@ windmill:
       replicas: 1
       privileged: false
       disableUnsharePid: true
-      terminationGracePeriodSeconds: 600
+      terminationGracePeriodSeconds: 24
+      nodeSelector:
+        cloud.google.com/gke-spot: "true"
       resources:
         requests:
           cpu: "100m"
-          memory: "512Mi"
-        limits:
           memory: "512Mi"
       autoscaling:
         enabled: false
@@ -48,12 +48,12 @@ windmill:
       replicas: 1
       privileged: false
       disableUnsharePid: true
-      terminationGracePeriodSeconds: 600
+      terminationGracePeriodSeconds: 24
+      nodeSelector:
+        cloud.google.com/gke-spot: "true"
       resources:
         requests:
           cpu: "100m"
-          memory: "512Mi"
-        limits:
           memory: "512Mi"
       autoscaling:
         enabled: false
@@ -64,12 +64,12 @@ windmill:
       replicas: 1
       privileged: false
       disableUnsharePid: true
-      terminationGracePeriodSeconds: 600
+      terminationGracePeriodSeconds: 24
+      nodeSelector:
+        cloud.google.com/gke-spot: "true"
       resources:
         requests:
           cpu: "200m"
-          memory: "1Gi"
-        limits:
           memory: "1Gi"
       autoscaling:
         enabled: false
@@ -90,8 +90,6 @@ windmill:
   extra:
     requests:
       cpu: "100m"
-      memory: "256Mi"
-    limits:
       memory: "256Mi"
 
 # 3. Disable Enterprise features
