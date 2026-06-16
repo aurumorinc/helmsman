@@ -49,7 +49,7 @@ env:
 
   # Disable Account Signup
   ENABLE_ACCOUNT_SIGNUP: false
-  
+
 # 4. Ingress / Load Balancing
 service:
   type: ClusterIP
@@ -59,7 +59,8 @@ service:
 
 # 6. Image Configuration
 image:
-  repository: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/chatwoot
+  repository: 
+    asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/chatwoot
   tag: v4.11.1-rc.2
   pullPolicy: IfNotPresent
 
@@ -73,16 +74,16 @@ web:
   resources:
     requests:
       cpu: 100m
-      memory: 768Mi
+      memory: 416Mi
     limits:
-      cpu: 1
-      memory: 2Gi
+      cpu: 400m
+      memory: 1664Mi
 
 worker:
   resources:
     requests:
       cpu: 150m
-      memory: 896Mi
+      memory: 676Mi
     limits:
-      cpu: 1
-      memory: 2Gi
+      cpu: 600m
+      memory: 2704Mi

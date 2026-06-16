@@ -1,0 +1,65 @@
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: chatwoot-web-vpa
+  namespace: chatwoot
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: chatwoot-web
+  updatePolicy:
+    updateMode: Off
+  resourcePolicy:
+    containerPolicies:
+    - containerName: '*'
+      minAllowed:
+        cpu: 50m
+        memory: 52Mi
+      controlledResources:
+      - cpu
+      - memory
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: chatwoot-worker-vpa
+  namespace: chatwoot
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: chatwoot-worker
+  updatePolicy:
+    updateMode: Off
+  resourcePolicy:
+    containerPolicies:
+    - containerName: '*'
+      minAllowed:
+        cpu: 50m
+        memory: 52Mi
+      controlledResources:
+      - cpu
+      - memory
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: cloud-sql-proxy-vpa
+  namespace: chatwoot
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cloud-sql-proxy
+  updatePolicy:
+    updateMode: Off
+  resourcePolicy:
+    containerPolicies:
+    - containerName: '*'
+      minAllowed:
+        cpu: 50m
+        memory: 52Mi
+      controlledResources:
+      - cpu
+      - memory
