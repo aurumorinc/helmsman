@@ -10,21 +10,32 @@ minio:
 
 # 2. Database Configuration (Connecting to external Postgres via Secret)
 windmill:
-  tag: "1.651.1"
+  image: "asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/windmill"
+  tag: "v1.728.0"
   appReplicas: 0
   databaseUrlSecretName: "database"
   databaseUrlSecretKey: "database-url"
-  
+  extraEnv:
+    - name: METRICS_ADDR
+      value: "0.0.0.0:8001"
+
   # 6. Enable Windmill Extra (LSP) and configure NEG
   extraReplicas: 1
   windmillExtra:
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "104Mi"
+      limits:
+        cpu: "200m"
+        memory: "416Mi"
     service:
       annotations:
         cloud.google.com/neg: '{"exposed_ports": {"3001":{}, "3002":{}, "3003":{}}}'
     podSecurityContext:
       runAsUser: 1001
       runAsNonRoot: true
-  
+
   # 7. Security Context Overrides for GKE Autopilot
   # GKE Autopilot disallows privileged containers and runAsUser: 0 (root)
   workerGroups:
@@ -37,8 +48,11 @@ windmill:
         cloud.google.com/gke-spot: "true"
       resources:
         requests:
-          cpu: "100m"
-          memory: "512Mi"
+          cpu: "50m"
+          memory: "52Mi"
+        limits:
+          cpu: "200m"
+          memory: "208Mi"
       autoscaling:
         enabled: false
       podSecurityContext:
@@ -54,7 +68,37 @@ windmill:
       resources:
         requests:
           cpu: "100m"
-          memory: "512Mi"
+          memory: "104Mi"
+        limits:
+          cpu: "400m"
+          memory: "416Mi"
+      autoscaling:
+        enabled: false
+      podSecurityContext:
+        runAsUser: 1001
+        runAsNonRoot: true
+    - name: "media"
+      replicas: 1
+      privileged: false
+      disableUnsharePid: true
+      terminationGracePeriodSeconds: 24
+      nodeSelector:
+        cloud.google.com/gke-spot: "true"
+      resources:
+        requests:
+          cpu: "1000m"
+          memory: "1Gi"
+          ephemeral-storage: "10Gi"
+        limits:
+          cpu: "1000m"
+          memory: "1Gi"
+          ephemeral-storage: "10Gi"
+      extraVolumeMounts:
+        - name: tmp-cache-volume
+          mountPath: /tmp/imagemagick
+      extraVolumes:
+        - name: tmp-cache-volume
+          emptyDir: {}
       autoscaling:
         enabled: false
       podSecurityContext:
@@ -69,32 +113,37 @@ windmill:
         cloud.google.com/gke-spot: "true"
       resources:
         requests:
-          cpu: "200m"
-          memory: "1Gi"
+          cpu: "1000m"
+          memory: "2Gi"
+          ephemeral-storage: "10Gi"
+        limits:
+          cpu: "4000m"
+          memory: "8Gi"
+          ephemeral-storage: "10Gi"
       autoscaling:
         enabled: false
       podSecurityContext:
         runAsUser: 1001
         runAsNonRoot: true
-        
+
   app:
     podSecurityContext:
       runAsUser: 1001
       runAsNonRoot: true
 
   indexer:
-    podSecurityContext:
-      runAsUser: 1001
-      runAsNonRoot: true
-  
+    enabled: false
+
   extra:
     requests:
       cpu: "100m"
       memory: "256Mi"
 
-# 3. Disable Enterprise features
+# 3. Enterprise features
 enterprise:
-  enabled: false
+  enabled: true
+  licenseKeySecretName: "key"
+  licenseKeySecretKey: "license-key"
 
 # 4. Ingress Configuration
 ingress:
@@ -103,3 +152,28 @@ ingress:
   annotations:
     kubernetes.io/ingress.class: "gce"
 
+extra:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 104Mi
+    limits:
+      cpu: 200m
+      memory: 416Mi
+workers:
+  default:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 52Mi
+      limits:
+        cpu: 200m
+        memory: 208Mi
+  native:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 104Mi
+      limits:
+        cpu: 400m
+        memory: 416Mi

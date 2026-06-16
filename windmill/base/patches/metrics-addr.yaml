@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: windmill-workers-default
+spec:
+  template:
+    spec:
+      containers:
+        - name: windmill-worker
+          env:
+            - name: METRICS_ADDR
+              value: "0.0.0.0:8001"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 52Mi
+            limits:
+              cpu: 200m
+              memory: 208Mi
