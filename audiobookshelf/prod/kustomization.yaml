@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: audiobookshelf
 # 1. Include all your infrastructure and database manifests
 resources:
+- vpa.yaml
 - namespace.yaml
 - service-account.yaml
 - persistent-volume.yaml

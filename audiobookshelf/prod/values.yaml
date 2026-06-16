@@ -21,7 +21,7 @@ audiobookshelf:
     persistence:
       enabled: true
       existingClaim: "config"
-  
+
   # Metadata directory storage
   metadata:
     persistence:
@@ -52,19 +52,21 @@ securityContext:
     type: RuntimeDefault
 
 # Define resources (Required for GKE Autopilot)
-resources: 
-  requests: 
+resources:
+  requests:
     cpu: 50m
-    memory: 250Mi
-
-service: 
+    memory: 52Mi
+  limits:
+    cpu: 200m
+    memory: 208Mi
+service:
   type: ClusterIP
   port: 8080
   annotations:
-      cloud.google.com/neg: '{"exposed_ports": {"8080":{}}}'
+    cloud.google.com/neg: '{"exposed_ports": {"8080":{}}}'
 
 fullnameOverride: "audiobookshelf"
 
-serviceAccount: 
+serviceAccount:
   create: false
   name: "storage-folder-admin"
