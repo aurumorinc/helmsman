@@ -9,8 +9,9 @@ redis:
 
 # 2. Image Configuration
 image:
-  repository: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/n8n
-  tag: v2.9.4
+  repository: 
+    asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aquiveal/n8n
+  tag: v2.12.3
   pullPolicy: IfNotPresent
 
 # 3. Main Instance Configuration
@@ -20,12 +21,13 @@ main:
     type: RollingUpdate
   autoscaling:
     enabled: false
-  resources: &resources
+  resources:
     requests:
       cpu: 100m
-      memory: 512Mi
+      memory: 364Mi
     limits:
-      memory: 512Mi
+      cpu: 400m
+      memory: 1456Mi
 
   persistence: &persistence
     enabled: true
@@ -46,7 +48,7 @@ main:
     GENERIC_TIMEZONE: "Asia/Kolkata"
     TZ: "Asia/Kolkata"
     N8N_EDITOR_BASE_URL: "https://n8n.capybaara.com"
-    
+
     # --- Database (Cloud SQL) ---
     DB_TYPE: "postgresdb"
     DB_POSTGRESDB_HOST: "cloud-sql-proxy.n8n.svc.cluster.local"
@@ -66,7 +68,7 @@ main:
     # --- Features ---
     OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS: "true"
     N8N_DIAGNOSTICS_ENABLED: "true"
-    
+
     # --- Hybrid Setup ---
     N8N_DISABLE_PRODUCTION_MAIN_PROCESS: "true"
 
@@ -113,7 +115,7 @@ main:
           name: access-key
           key: n8n-external-storage-s3-access-secret
 
-  livenessProbe: &livenessProbe
+  livenessProbe:
     httpGet:
       path: /healthz
       port: 5678
@@ -122,7 +124,7 @@ main:
     timeoutSeconds: 240
     failureThreshold: 10
 
-  readinessProbe: &readinessProbe
+  readinessProbe:
     httpGet:
       path: /healthz/readiness
       port: 5678
@@ -135,15 +137,24 @@ main:
 worker:
   enabled: true
   deploymentStrategy: *deploymentStrategy
-  autoscaling: 
+  terminationGracePeriodSeconds: 24
+  nodeSelector:
+    cloud.google.com/gke-spot: "true"
+  autoscaling:
     enabled: false
   concurrency: 10
-  resources: *resources
+  resources:
+    requests:
+      cpu: 50m
+      memory: 208Mi
+    limits:
+      cpu: 200m
+      memory: 832Mi
   persistence: *persistence
   extraEnv: *extraEnv
 
 webhook:
   enabled: false
-  
+
 ingress:
   enabled: false

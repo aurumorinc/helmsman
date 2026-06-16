@@ -6,7 +6,7 @@ metadata:
 spec:
   scaleTargetRef:
     name: n8n-worker
-  minReplicaCount: 1
+  minReplicaCount: 2
   maxReplicaCount: 100 # Maximum number of workers
   pollingInterval: 15 # Check Redis every 15 seconds
   cooldownPeriod: 300 # Wait 5 minutes after queue is empty before scaling down
@@ -20,5 +20,14 @@ spec:
       listName: "bull:jobs:wait"
       
       # Target: Scale up when there are more than 10 jobs per worker
-      # (Matches your 'concurrency: 10' setting)
+      listLength: "10"
+  - type: redis
+    metadata:
+      # Your Redis IP
+      address: "valkey.n8n.asia-south1.prod.capybaara.com:6379"
+      
+      # The key you verified
+      listName: "bull:jobs:active"
+      
+      # Target: Scale up when there are more than 10 jobs per worker
       listLength: "10"
