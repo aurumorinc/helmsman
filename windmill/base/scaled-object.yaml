@@ -41,6 +41,30 @@ spec:
         query: "SELECT count(*) FROM v2_job_queue WHERE tag IN ('nativets', 'postgresql', 'mysql', 'graphql', 'snowflake', 'bigquery', 'mssql', 'oracledb') AND suspend = 0 AND (running = true OR (running = false AND scheduled_for <= now()))"
       authenticationRef:
         name: windmill
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: media
+  namespace: windmill
+spec:
+  scaleTargetRef:
+    name: windmill-workers-media
+    kind: Deployment
+    apiVersion: apps/v1
+  minReplicaCount: 0
+  maxReplicaCount: 50
+  pollingInterval: 15
+  cooldownPeriod: 30
+  triggers:
+    - type: postgresql
+      metadata:
+        targetQueryValue: "1"
+        query: "SELECT count(*) FROM v2_job_queue WHERE tag IN ('bpy', 'snapp', 'imagemagick') AND suspend = 0 AND (running = true OR (running = false AND scheduled_for <= now()))"
+      authenticationRef:
+        name: windmill
+
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -60,6 +84,6 @@ spec:
     - type: postgresql
       metadata:
         targetQueryValue: "1"
-        query: "SELECT count(*) FROM v2_job_queue WHERE tag IN ('chrome', 'selenium') AND suspend = 0 AND (running = true OR (running = false AND scheduled_for <= now()))"
+        query: "SELECT count(*) FROM v2_job_queue WHERE tag IN ('koda', 'invisible_playwright', 'cloakbrowser', 'chromium', 'firefox') AND suspend = 0 AND (running = true OR (running = false AND scheduled_for <= now()))"
       authenticationRef:
         name: windmill

@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: windmill-workers-media
+spec:
+  template:
+    spec:
+      containers:
+      - name: windmill-worker
+        image: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aurumorinc/windmill-media:v1.728.0-rc.1
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "1Gi"
+            ephemeral-storage: "10Gi" # Request disk space for temp files
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+            ephemeral-storage: "10Gi" # Limit to avoid node disk exhaustion
+        volumeMounts:
+        - name: tmp-cache-volume
+          mountPath: /tmp/imagemagick
+      volumes:
+      - name: tmp-cache-volume
+        emptyDir: {} # Backed by the node's disk, not RAM
+      nodeSelector:
+        cloud.google.com/gke-spot: "true"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: windmill-workers-browser
+spec:
+  template:
+    spec:
+      containers:
+      - name: windmill-worker
+        image: asia-south1-docker.pkg.dev/au-heimdall-prod-r8oa2r/remote-github-aquiveal-artifact-registry/aurumorinc/windmill-browser:v1.728.0-rc.1
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "2Gi"
+            ephemeral-storage: "10Gi"
+          limits:
+            cpu: "4000m"
+            memory: "8Gi"
+            ephemeral-storage: "10Gi"
