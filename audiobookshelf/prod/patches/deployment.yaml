@@ -7,20 +7,27 @@ spec:
   template:
     spec:
       containers:
-      - name: audiobookshelf
-        livenessProbe:
-          httpGet:
-            path: /healthcheck
-            port: 8080
-          initialDelaySeconds: 30
-          timeoutSeconds: 240
-          periodSeconds: 240
-          failureThreshold: 1
-        readinessProbe:
-          httpGet:
-            path: /healthcheck
-            port: 8080
-          initialDelaySeconds: 30
-          timeoutSeconds: 240
-          periodSeconds: 240
-          failureThreshold: 1
+        - name: audiobookshelf
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 240
+            periodSeconds: 240
+            failureThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 240
+            periodSeconds: 240
+            failureThreshold: 1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 52Mi
+            limits:
+              cpu: 200m
+              memory: 208Mi
