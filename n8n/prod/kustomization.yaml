@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: n8n
 
 resources:
+  - vpa.yaml
   # - namespace.yaml
   - service-account.yaml
   - secret-store.yaml

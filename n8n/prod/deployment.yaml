@@ -15,22 +15,22 @@ spec:
     spec:
       serviceAccountName: cloud-sql-client
       containers:
-      - name: proxy
+        - name: proxy
         # The official Google Cloud SQL Proxy image
-        image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:latest
-        args:
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:latest
+          args:
           # Enable Private IP connectivity
-          - "--private-ip"
+            - "--private-ip"
           # Listen on all interfaces so the Service can reach it
-          - "--address=0.0.0.0"
-          - "--port=5432"
-          - "cb-n8n-prod-479922:asia-south1:asia-south1-postgres-sql"
-        ports:
-        - containerPort: 5432
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "100m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
+            - "--address=0.0.0.0"
+            - "--port=5432"
+            - "cb-n8n-prod-479922:asia-south1:asia-south1-postgres-sql"
+          ports:
+            - containerPort: 5432
+          resources:
+            requests:
+              cpu: 50m
+              memory: 52Mi
+            limits:
+              cpu: 200m
+              memory: 208Mi
